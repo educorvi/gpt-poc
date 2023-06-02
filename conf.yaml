@@ -1,0 +1,10 @@
+OpenAI:
+  API_KEY:
+
+ElasticSearch:
+  url:
+  index:
+  result_size: 4
+
+Websocket:
+  port: 8765
