@@ -2,8 +2,11 @@
 
 all: python_dist files.txt
 
+deb_dist/gpt-poc-backend-%.deb: dist/gpt-poc-backend-%.tar.gz
+	py2dsc-deb --with-dh-virtualenv $<
+
 python_dist: setup.py gpt-poc-backend backend.py customElasticSearchRetriever.py tools.py
-	python3 setup.py bdist --format=gztar
+	python3 setup.py sdist
 
 install:
 	python3 setup.py install
