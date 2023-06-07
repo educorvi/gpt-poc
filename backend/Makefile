@@ -1,9 +1,9 @@
-.PHONY: python_dist install all uninstall
+.PHONY: python_dist deb install all uninstall
 
 all: python_dist files.txt
 
-deb_dist/gpt-poc-backend-%.deb: dist/gpt-poc-backend-%.tar.gz
-	py2dsc-deb --with-dh-virtualenv $<
+deb: setup.py gpt-poc-backend backend.py customElasticSearchRetriever.py tools.py
+	python3 setup.py --command-packages=stdeb.command bdist_deb
 
 python_dist: setup.py gpt-poc-backend backend.py customElasticSearchRetriever.py tools.py
 	python3 setup.py sdist
