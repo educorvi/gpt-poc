@@ -9,9 +9,9 @@ from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.schema import HumanMessage
 
-from backend.tools import create_elastic_tool
+from tools import create_elastic_tool
 
-if __name__ == "__main__":
+def start_backend():
     with open("/etc/gpt-poc/conf.yaml", "r") as stream:
         try:
             data = yaml.safe_load(stream)

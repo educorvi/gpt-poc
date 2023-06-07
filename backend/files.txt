@@ -1,0 +1,12 @@
+/usr/local/bin/f2py
+/usr/local/bin/f2py3
+/usr/local/bin/f2py3.10
+/usr/local/bin/gpt-poc-backend
+/usr/local/bin/langchain
+/usr/local/bin/langchain-server
+/usr/local/bin/normalizer
+/usr/local/bin/openai
+/usr/local/bin/publish.py
+/usr/local/bin/run_backend.py
+/usr/local/bin/tqdm
+/usr/local/lib/python3.10/dist-packages/gpt_poc_backend-0.0.1-py3.10.egg

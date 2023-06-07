@@ -2,7 +2,7 @@ import json
 
 from langchain.tools import Tool
 
-from backend.customElasticSearchRetriever import CustomElasticSearchRetriever
+from customElasticSearchRetriever import CustomElasticSearchRetriever
 import elasticsearch
 
 
