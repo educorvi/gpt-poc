@@ -1,5 +1,5 @@
 files = $(wildcard *.py) gpt-poc-backend conf.template.yaml requirements.txt
-sdist_comm = sdist_dsc --with-dh-virtualenv --suite jammy --build-depends "dh-python, dh-virtualenv" --copyright-file copyright
+sdist_comm = sdist_dsc --suite jammy --build-depends "dh-python" --copyright-file copyright
 
 .PHONY: python_dist deb install all uninstall clean sign publish
 
