@@ -3,7 +3,7 @@ Description=GPT POC Backend Service
 
 [Service]
 type=simple
-ExecStart=/workspaces/gpt-poc/backend/Makefile
+ExecStart=/usr/bin/gpt-poc-backend
 ProtectHome=true
 ProtectSystem=strict
 
