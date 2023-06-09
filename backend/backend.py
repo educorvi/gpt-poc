@@ -55,7 +55,7 @@ def start_backend():
 
 
             async def run_websocket(port_number):
-                async with websockets.serve(respond, "localhost", port_number):
+                async with websockets.serve(respond, "0.0.0.0", port_number):
                     print(f"Started websocket server on port", port_number)
                     await asyncio.Future()
 
