@@ -1,0 +1,10 @@
+#!/usr/bin/env python3
+from pathlib import Path
+from backend import start_backend
+
+
+if __name__ == "__main__":
+    if(not Path("/etc/gpt-poc/conf.yaml").is_file()):
+        print("Please create the /etc/gpt-poc/conf.yaml file by coping it from /etc/gpt-poc/conf.template.yaml and filling in the information")
+        exit(1)
+    start_backend()

@@ -1,0 +1,9 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Source: https://www.example.com/software/project
+Upstream-Name: gpt-poc-backend
+Upstream-Contact: Julian Pollinger <julian@pollinger.dev>
+
+Files:
+ *
+Copyright: 2023 Educorvi GmbH & Co. KG.
+License: MIT

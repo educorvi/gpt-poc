@@ -9,9 +9,9 @@ from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.schema import HumanMessage
 
-from backend.tools import create_elastic_tool
+from tools import create_elastic_tool
 
-if __name__ == "__main__":
+def start_backend():
     with open("/etc/gpt-poc/conf.yaml", "r") as stream:
         try:
             data = yaml.safe_load(stream)
@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
 
             async def run_websocket(port_number):
-                async with websockets.serve(respond, "localhost", port_number):
+                async with websockets.serve(respond, "0.0.0.0", port_number):
                     print(f"Started websocket server on port", port_number)
                     await asyncio.Future()
 

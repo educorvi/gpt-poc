@@ -1,0 +1,11 @@
+[Unit]
+Description=GPT POC Backend Service
+
+[Service]
+type=simple
+ExecStart=/usr/bin/gpt-poc-backend
+ProtectHome=true
+ProtectSystem=strict
+
+[Install]
+WantedBy=multi-user.target
