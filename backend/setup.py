@@ -11,7 +11,7 @@ requirements = [
 
 setup(
     name="gpt-poc-backend",
-    version="0.0.3",
+    version="0.0.4",
     author="Julian Pollinger",
     author_email="julian.pollinger@educorvi.de",
     description="A proof of concept for chatgpt integrated with elasticsearch",
@@ -20,6 +20,9 @@ setup(
     long_description_content_type="text/markdown",
     long_description=open("README.md").read(),
     scripts=["gpt-poc-backend"],
-    data_files=[("/etc/gpt-poc", ["conf.template.yaml"])],
+    data_files=[
+        ("/etc/gpt-poc", ["conf.template.yaml"]),
+        ("/lib/systemd/system", ["gpt-poc-backend.service"]),
+    ],
     install_requires=requirements,
 )
