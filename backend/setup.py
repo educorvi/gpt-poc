@@ -20,6 +20,6 @@ setup(
     long_description_content_type='text/markdown',
     long_description=open('README.md').read(),
     scripts=["gpt-poc-backend"],
-    data_files=[("/etc/gpt-poc", ["conf.yaml"])],
+    data_files=[("/etc/gpt-poc", ["conf.template.yaml"])],
     install_requires=requirements
     )
