@@ -7,7 +7,7 @@ on:
 jobs:
   build_deb:
     runs-on: ubuntu-latest
-    container: ghcr.io/educorvi/ubuntu_packaging:main
+    container: ghcr.io/educorvi/ubuntu_packaging:default
     steps:
       - name: Build .deb
         working-directory: backend

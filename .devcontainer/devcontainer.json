@@ -1,5 +1,5 @@
 {
-    "image": "ghcr.io/educorvi/ubuntu_packaging:latest",
+    "image": "ghcr.io/educorvi/ubuntu_packaging:devcontainer",
 	"customizations": {
 		"vscode": {
 			"extensions": [
