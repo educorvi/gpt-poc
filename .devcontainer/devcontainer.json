@@ -1,7 +1,5 @@
 {
-    "build": {
-        "dockerfile": "Dockerfile"
-	},
+    "image": "ghcr.io/educorvi/ubuntu_packaging:latest",
 	"customizations": {
 		"vscode": {
 			"extensions": [
