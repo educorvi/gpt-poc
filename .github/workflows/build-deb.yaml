@@ -7,7 +7,7 @@ on:
 jobs:
   build_deb:
     runs-on: ubuntu-latest
-    container: ghcr.io/educorvi/ubuntu_packaging:devcontainer
+    container: ghcr.io/educorvi/ubuntu_packaging:latest
     steps:
       - uses: actions/checkout@v3
       - name: Build .deb
