@@ -11,7 +11,7 @@ requirements = [
 
 setup(
     name="gpt-poc-backend",
-    version="0.0.4",
+    version="0.1.0",
     author="Julian Pollinger",
     author_email="julian.pollinger@educorvi.de",
     description="A proof of concept for chatgpt integrated with elasticsearch",
