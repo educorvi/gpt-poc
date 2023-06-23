@@ -6,9 +6,9 @@ from customElasticSearchRetriever import CustomElasticSearchRetriever
 import elasticsearch
 
 
-def create_elastic_tool(elasticsearch_url, elasticsearch_index, result_size):
+def create_elastic_tool(elasticsearch_url, elasticsearch_index, result_size, result_number):
     retriever = CustomElasticSearchRetriever(elasticsearch.Elasticsearch(elasticsearch_url),
-                                             elasticsearch_index, result_size)
+                                             elasticsearch_index, result_size, result_number)
 
     def search_documents(query: str) -> str:
         results = retriever.get_relevant_documents(query)

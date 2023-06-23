@@ -14,10 +14,11 @@ class CustomElasticSearchRetriever(BaseRetriever):
 
     size: int
 
-    def __init__(self, client: Any, index_name: str, size=2):
+    def __init__(self, client: Any, index_name: str, size=300, number=2):
         self.client = client
         self.index_name = index_name
         self.size = size
+        self.number = number
 
     @classmethod
     def create(
@@ -35,10 +36,10 @@ class CustomElasticSearchRetriever(BaseRetriever):
     def get_relevant_documents(self, query: str) -> List[Document]:
         query_dict = {
             "from": 0,
-            "size": self.size,
+            "size": self.number,
             "query": {"match": {"SearchableText": query}},
             "highlight": {
-                "fragment_size": 300,
+                "fragment_size": self.size,
                 "fields": {
                     "SearchableText": {"type": "plain"}
                 }

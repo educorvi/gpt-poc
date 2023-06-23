@@ -1,10 +1,16 @@
 OpenAI:
   API_KEY:
+  model:
+    main: gpt-3.5-turbo-16k
+    formatting: babbage
 
 ElasticSearch:
   url:
   index:
-  result_size: 4
+  # Number of results returned per query
+  result_number: 4
+  # Number of characters per result
+  result_size: 300
 
 Websocket:
   port: 8765
