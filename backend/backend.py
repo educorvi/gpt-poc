@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import asyncio
-import random
 
 import websockets
 import yaml
@@ -42,7 +41,7 @@ def start_backend():
                                          verbose=True,
                                          memory=memory)
                 async for message in websocket:
-                    prompt = message + "\n Antworte auf Deutsch und gebe als Quellen die URLs an, die vom Elasticsearch tool unter 'source' angegeben werden"
+                    prompt = message + "\n Antworte auf Deutsch und gebe Quellen an. Gebe als Quellen ausschließlich die URLs an, die vom Elasticsearch tool unter 'Metadata.source' angegeben werden."
 
                     try:
                         result = formatter([HumanMessage(
