@@ -127,6 +127,7 @@ function sendMessage(event: Event) {
   height: 100%;
   padding: 2em 10px 40px 10px;
   box-sizing: border-box;
+  align-content: flex-start;
   overflow-y: scroll;
   overflow-x: hidden;
   z-index: 0;
