@@ -36,7 +36,7 @@ const disabled_send = ref(true);
 
 const input_message = ref("");
 
-const usage = ref({})
+const usage = ref<Record<string, any>>({})
 
 const messages = ref<Message[]>([])
 
