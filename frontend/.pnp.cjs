@@ -28,10 +28,12 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         [null, {\
           "packageLocation": "./",\
           "packageDependencies": [\
+            ["@types/marked", "npm:5.0.0"],\
             ["@types/node", "npm:18.16.2"],\
             ["@vitejs/plugin-vue", "virtual:08f859c73b15b841a86d1bfc5d3553478b1c0a314b14377170b64fb873394e4dd02bd391ab10d042e8483ead9baaf80e8faec439455f204bbf3e1d34761ed9a1#npm:4.2.1"],\
             ["@vue/tsconfig", "virtual:08f859c73b15b841a86d1bfc5d3553478b1c0a314b14377170b64fb873394e4dd02bd391ab10d042e8483ead9baaf80e8faec439455f204bbf3e1d34761ed9a1#npm:0.1.3"],\
             ["bootstrap", "virtual:08f859c73b15b841a86d1bfc5d3553478b1c0a314b14377170b64fb873394e4dd02bd391ab10d042e8483ead9baaf80e8faec439455f204bbf3e1d34761ed9a1#npm:5.2.3"],\
+            ["marked", "npm:5.1.0"],\
             ["npm-run-all", "npm:4.1.5"],\
             ["sass", "npm:1.62.1"],\
             ["typescript", "patch:typescript@npm%3A4.8.4#~builtin<compat/typescript>::version=4.8.4&hash=1a91c8"],\
@@ -87,10 +89,12 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./",\
           "packageDependencies": [\
             ["@educorvi/gpt-frontend", "workspace:."],\
+            ["@types/marked", "npm:5.0.0"],\
             ["@types/node", "npm:18.16.2"],\
             ["@vitejs/plugin-vue", "virtual:08f859c73b15b841a86d1bfc5d3553478b1c0a314b14377170b64fb873394e4dd02bd391ab10d042e8483ead9baaf80e8faec439455f204bbf3e1d34761ed9a1#npm:4.2.1"],\
             ["@vue/tsconfig", "virtual:08f859c73b15b841a86d1bfc5d3553478b1c0a314b14377170b64fb873394e4dd02bd391ab10d042e8483ead9baaf80e8faec439455f204bbf3e1d34761ed9a1#npm:0.1.3"],\
             ["bootstrap", "virtual:08f859c73b15b841a86d1bfc5d3553478b1c0a314b14377170b64fb873394e4dd02bd391ab10d042e8483ead9baaf80e8faec439455f204bbf3e1d34761ed9a1#npm:5.2.3"],\
+            ["marked", "npm:5.1.0"],\
             ["npm-run-all", "npm:4.1.5"],\
             ["sass", "npm:1.62.1"],\
             ["typescript", "patch:typescript@npm%3A4.8.4#~builtin<compat/typescript>::version=4.8.4&hash=1a91c8"],\
@@ -335,6 +339,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/@tootallnate-once-npm-2.0.0-e36cf4f140-ad87447820.zip/node_modules/@tootallnate/once/",\
           "packageDependencies": [\
             ["@tootallnate/once", "npm:2.0.0"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["@types/marked", [\
+        ["npm:5.0.0", {\
+          "packageLocation": "./.yarn/cache/@types-marked-npm-5.0.0-87556995f9-4828a51186.zip/node_modules/@types/marked/",\
+          "packageDependencies": [\
+            ["@types/marked", "npm:5.0.0"]\
           ],\
           "linkType": "HARD"\
         }]\
@@ -1870,6 +1883,15 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["promise-retry", "npm:2.0.1"],\
             ["socks-proxy-agent", "npm:7.0.0"],\
             ["ssri", "npm:9.0.1"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["marked", [\
+        ["npm:5.1.0", {\
+          "packageLocation": "./.yarn/cache/marked-npm-5.1.0-a79a18cf61-ecb2b36a47.zip/node_modules/marked/",\
+          "packageDependencies": [\
+            ["marked", "npm:5.1.0"]\
           ],\
           "linkType": "HARD"\
         }]\

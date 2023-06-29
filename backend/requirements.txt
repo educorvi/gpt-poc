@@ -2,7 +2,7 @@ websockets~=11.0.3
 
 PyYAML~=6.0
 
-langchain~=0.0.188
+langchain~=0.0.219
 
 elasticsearch~=8.8.0
 
@@ -10,7 +10,9 @@ openai~=0.27.7
 
 aiohttp==3.8.4
 
-setuptools
+peewee~=3.16.2
+
+setuptools~=68.0.0
 
 stdeb
 

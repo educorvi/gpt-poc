@@ -2,7 +2,7 @@
   <div id="banner">Cost of this conversation: {{Math.round((usage.cost || 0)*100)/100}}$</div>
   <div id="messages">
     <chat-bubble v-for="message in messages" :message="message"></chat-bubble>
-    <div class="bubble-left" v-if="disabled_send">
+    <div class="bubble-left" v-if="disabled_send" style="padding: calc(2 * var(--r) / 3)">
       <div class="load-3">
         <div class="line"></div>
         <div class="line"></div>

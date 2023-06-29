@@ -16,9 +16,11 @@
   ],
   "dependencies": {
     "bootstrap": "5",
+    "marked": "^5.1.0",
     "vue": "^3.2.47"
   },
   "devDependencies": {
+    "@types/marked": "^5.0.0",
     "@types/node": "^18.14.2",
     "@vitejs/plugin-vue": "^4.0.0",
     "@vue/tsconfig": "^0.1.3",

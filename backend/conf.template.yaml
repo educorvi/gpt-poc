@@ -2,7 +2,6 @@ OpenAI:
   API_KEY:
   model:
     main: gpt-3.5-turbo-16k
-    formatting: gpt-3.5-turbo
 
 ElasticSearch:
   url:

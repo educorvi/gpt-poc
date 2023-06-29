@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import urllib.parse
 from typing import Any, Iterable, List
 
 from langchain.docstore.document import Document
@@ -52,7 +53,7 @@ class CustomElasticSearchRetriever(BaseRetriever):
         docs = []
         for r in res["hits"]["hits"]:
             doc = Document(page_content=json.dumps(r["highlight"]["SearchableText"]))
-            doc.metadata["source"] = r["_source"]["path"]["path"].replace("/inwiportal", "https://inwi-rue.bghw.de")
+            doc.metadata["source"] = urllib.parse.quote(r["_source"]["path"]["path"].replace("/inwiportal", "https://inwi-rue.bghw.de"))
             docs.append(doc)
         return docs
 

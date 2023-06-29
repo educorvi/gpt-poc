@@ -3,10 +3,11 @@ from setuptools import setup
 requirements = [
     "websockets~=11.0.3",
     "PyYAML~=6.0",
-    "langchain~=0.0.188",
+    "langchain~=0.0.219",
     "elasticsearch~=8.8.0",
     "openai~=0.27.7",
     "aiohttp==3.8.4",
+    "peewee==3.16.2"
 ]
 
 setup(
@@ -23,6 +24,7 @@ setup(
     data_files=[
         ("/etc/gpt-poc", ["conf.template.yaml"]),
         ("/lib/systemd/system", ["gpt-poc-backend.service"]),
+        ('/var/lib/gpt-poc', []),
     ],
     install_requires=requirements,
 )
