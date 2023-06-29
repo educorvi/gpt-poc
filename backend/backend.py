@@ -15,6 +15,7 @@ from tools import create_elastic_tool
 
 
 def start_backend():
+    print(f"Cost of usage for the current month thus far: {round(get_cost_of_current_month() * 100) / 100}$")
     with open("/etc/gpt-poc/conf.yaml", "r") as stream:
         try:
             data = yaml.safe_load(stream)
@@ -33,6 +34,9 @@ def start_backend():
             open_ai_model = data["OpenAI"]["model"]["main"]
             if open_ai_model is None:
                 raise Exception("No OpenAI main model specified")
+            limit = data["monthly_limit"]
+            if limit is None:
+                raise Exception("No monthly limit specified")
             tool = create_elastic_tool(es_url, es_index, es_result_size, es_result_number)
 
             async def respond(websocket):
@@ -51,6 +55,10 @@ def start_backend():
                 try:
                     with get_openai_callback() as cb:
                         async for message in websocket:
+                            if (get_cost_of_current_month() >= limit):
+                                await websocket.send(
+                                    json.dumps({"type": "message", "content": "The monthly limit has been reached."}))
+                                continue
                             prompt = message + "\n Antworte auf Deutsch und gebe die Quellen an, aus denen du Informationen bezogen hast. Gebe als Quellen ausschließlich die URLs an, die vom Elasticsearch tool unter 'Metadata.source' angegeben werden. Gebe Quellen als Markdown Liste an im folgenden Format: \"[Name der Quelle](URL der Quelle)\""
                             try:
                                 result = agent.run(prompt)
@@ -58,7 +66,10 @@ def start_backend():
                                 result = "Ein Fehler ist aufgetreten"
                                 print(e)
                             await websocket.send(json.dumps({"type": "message", "content": result}))
-                            await websocket.send(json.dumps({"type": "usage", "content": {"tokens": {"total": cb.total_tokens, "prompt": cb.prompt_tokens, "completion": cb.completion_tokens}, "cost": cb.total_cost, "successful_requests": cb.successful_requests}}))
+                            await websocket.send(json.dumps({"type": "usage", "content": {
+                                "tokens": {"total": cb.total_tokens, "prompt": cb.prompt_tokens,
+                                           "completion": cb.completion_tokens}, "cost": cb.total_cost,
+                                "successful_requests": cb.successful_requests}}))
                             db_entry.cost = cb.total_cost
                             db_entry.tokens = cb.total_tokens
                             db_entry.save()

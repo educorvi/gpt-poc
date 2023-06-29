@@ -13,3 +13,6 @@ ElasticSearch:
 
 Websocket:
   port: 8765
+
+# monthly_limit in dollars. The actual price might slightly overshoot the limit, because it is only checked after every query
+monthly_limit: 50
