@@ -5,6 +5,7 @@
     <title>Evaluationsergebnisse</title>
 </head>
 <body>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <div id="content">
     <h1>Evaluation</h1>
     <div id="generated_content">
@@ -15,7 +16,6 @@
 </body>
 
 <script>
-
     const gcd = document.getElementById("generated_content");
     fetch("results.json").then(async res => {
         if (res.status !== 200) {
@@ -29,7 +29,7 @@
             gcd.appendChild(h);
 
             const a = document.createElement("div");
-            a.innerHTML = result.answer
+            a.innerHTML = marked.parse(JSON.parse(result.answer).content);
             gcd.appendChild(a);
         }
     }).catch(err => {

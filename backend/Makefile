@@ -30,4 +30,4 @@ uninstall: files.txt
 	xargs rm -rf < files.txt
 
 clean:
-	rm -rf dist deb_dist build gpt_poc_backend.egg-info
+	rm -rf dist deb_dist build gpt_poc_backend.egg-info gpt-poc-backend-*.tar.gz
