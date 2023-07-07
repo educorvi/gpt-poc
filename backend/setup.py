@@ -10,6 +10,10 @@ requirements = [
     "peewee==3.16.2"
 ]
 
+description = open("README.md").read()
+if description is None:
+    raise Exception("No README.md found")
+
 setup(
     name="gpt-poc-backend",
     version="0.2.1",
@@ -19,7 +23,7 @@ setup(
     license="MIT",
     py_modules=["backend", "customElasticSearchRetriever", "tools", "DB_Classes"],
     long_description_content_type="text/markdown",
-    long_description=open("README.md").read(),
+    long_description=description,
     scripts=["gpt-poc-backend"],
     data_files=[
         ("/etc/gpt-poc", ["conf.template.yaml"]),

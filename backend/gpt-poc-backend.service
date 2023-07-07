@@ -3,7 +3,7 @@ Description=GPT POC Backend Service
 
 [Service]
 type=simple
-ExecStart=/usr/bin/gpt-poc-backend
+ExecStart=/usr/bin/env gpt-poc-backend
 ProtectHome=true
 ProtectSystem=strict
 StateDirectory=gpt-poc
