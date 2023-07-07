@@ -16,7 +16,7 @@ if description is None:
 
 setup(
     name="gpt-poc-backend",
-    version="0.2.1",
+    version="0.3.0",
     author="Julian Pollinger",
     author_email="julian.pollinger@educorvi.de",
     description="A proof of concept for chatgpt integrated with elasticsearch",
