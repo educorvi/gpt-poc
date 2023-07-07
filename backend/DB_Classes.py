@@ -2,7 +2,7 @@ import datetime
 
 from peewee import *
 
-db = SqliteDatabase('/var/lib/gpt-poc/database.db')
+db = SqliteDatabase("/var/lib/gpt-poc/database.db")
 
 
 class BaseModel(Model):
@@ -17,7 +17,19 @@ class Chat(BaseModel):
 
 
 def get_cost_of_current_month():
-    return db.execute_sql('SELECT SUM(cost) as cost from chat where start_time >= ?', (str(datetime.datetime.today().replace(day=1, hour=0, minute=0, second=0, microsecond=0)),)).fetchone()[0]
+    db_result = db.execute_sql(
+        "SELECT SUM(cost) as cost from chat where start_time >= ?",
+        (
+            str(
+                datetime.datetime.today().replace(
+                    day=1, hour=0, minute=0, second=0, microsecond=0
+                )
+            ),
+        ),
+    ).fetchone()[0]
+    if not db_result:
+        db_result = 0
+    return db_result
 
 
 db.connect()
