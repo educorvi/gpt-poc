@@ -37,9 +37,11 @@ def start_backend():
             limit = data["monthly_limit"]
             if limit is None:
                 raise Exception("No monthly limit specified")
-            tool = create_elastic_tool(es_url, es_index, es_result_size, es_result_number)
 
             async def respond(websocket):
+                sources = []
+                tool = create_elastic_tool(es_url, es_index, es_result_size, es_result_number, sources)
+
                 memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
                 db_entry = Chat.create()
 
@@ -59,9 +61,16 @@ def start_backend():
                                 await websocket.send(
                                     json.dumps({"type": "message", "content": "The monthly limit has been reached."}))
                                 continue
-                            prompt = message + "\n Antworte auf Deutsch und gebe die Quellen an, aus denen du Informationen bezogen hast. Gebe als Quellen ausschließlich die URLs an, die vom Elasticsearch tool unter 'Metadata.source' angegeben werden. Gebe Quellen als Markdown Liste an im folgenden Format: \"[Name der Quelle](URL der Quelle)\""
+                            prompt = message + "\n Antworte auf Deutsch verwende lediglich die gegeben Informationen. Belege deine Aussagen, indem du sie mit dem Index (beginnend mit 1) der Quelle versiehst, aus der die Information stammt, z.B.: 'Dies ist ein belegtes Beispiel [1].'"
                             try:
                                 result = agent.run(prompt)
+                                if len(sources)>0:
+                                    result += "\n\nGefundene Informationen:"
+                                    index = 1
+                                    while len(sources) > 0:
+                                        s = sources.pop(0)
+                                        result += f"\n- [{index}] [{s['title']}]({s['source']})"
+                                        index += 1
                             except Exception as e:
                                 result = "Ein Fehler ist aufgetreten"
                                 print(e)

@@ -1,17 +1,17 @@
 import json
-
 from langchain.tools import Tool
 
 from customElasticSearchRetriever import CustomElasticSearchRetriever
 import elasticsearch
 
 
-def create_elastic_tool(elasticsearch_url, elasticsearch_index, result_size, result_number):
+def create_elastic_tool(elasticsearch_url, elasticsearch_index, result_size, result_number, sources: list):
     retriever = CustomElasticSearchRetriever(elasticsearch.Elasticsearch(elasticsearch_url),
                                              elasticsearch_index, result_size, result_number)
 
     def search_documents(query: str) -> str:
         results = retriever.get_relevant_documents(query)
+        sources.extend(list(map(lambda d: {'source': d.metadata["source"], 'title': d.metadata["title"]}, results)))
         ret_string = "\n--------------------------------------------------------------------\n".join(
             list(map(lambda d: "Metadata: \n" + json.dumps(d.metadata) + "\nContent: \n" + d.page_content,
                      results))

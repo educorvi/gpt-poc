@@ -40,6 +40,7 @@ class CustomElasticSearchRetriever:
         docs = []
         for r in res["hits"]["hits"]:
             doc = Document(page_content=json.dumps(r["highlight"]["SearchableText"]))
-            doc.metadata["source"] = urllib.parse.quote(r["_source"]["path"]["path"].replace("/inwiportal", "https://inwi-rue.bghw.de"))
+            doc.metadata["source"] = urllib.parse.quote(r["_source"]["path"]["path"])
+            doc.metadata["title"] = r["_source"]["Title"]
             docs.append(doc)
         return docs
