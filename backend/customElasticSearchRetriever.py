@@ -14,6 +14,9 @@ class CustomElasticSearchRetriever(BaseRetriever):
     """
 
     size: int
+    client: Any
+    index_name: str
+    number: int
 
     def __init__(self, client: Any, index_name: str, size=300, number=2):
         self.client = client
