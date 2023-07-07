@@ -17,7 +17,7 @@ setup(
     author_email="julian.pollinger@educorvi.de",
     description="A proof of concept for chatgpt integrated with elasticsearch",
     license="MIT",
-    py_modules=["backend", "customElasticSearchRetriever", "tools"],
+    py_modules=["backend", "customElasticSearchRetriever", "tools", "DB_Classes"],
     long_description_content_type="text/markdown",
     long_description=open("README.md").read(),
     scripts=["gpt-poc-backend"],
