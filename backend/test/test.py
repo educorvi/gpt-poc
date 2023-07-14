@@ -37,10 +37,20 @@ async def test():
             websocket = await websockets.connect(f"ws://localhost:{port}")
             await websocket.send(question)
             start = time.time()
-            answer = json.loads(await websocket.recv())
-            usage = json.loads(await websocket.recv())
+            usage = None
+            answer = None
+            tool_usage = []
+            while usage is None or answer is None or len(tool_usage) == 0:
+                message = json.loads(await websocket.recv())
+                if message["type"] == "usage":
+                    usage = message
+                if message["type"] == "message":
+                    answer = message
+                if message["type"] == "event" and message["content"]["event"] == "agent_action":
+                    tool_usage.append(message["content"]["data"])
+
             end = time.time()
-            results.append({"question": question, "answer": answer, "usage": usage, "execution_duration_seconds": end - start})
+            results.append({"question": question, "answer": answer, "usage": usage, "tool_usage": tool_usage, "execution_duration_seconds": end - start})
             await websocket.close()
             print(f"\u2713 {question} ({round((end-start)*1000)}ms)")
     except Exception as e:
@@ -82,6 +92,7 @@ async def test():
         
 '''
         for result in results:
+            tools_string = "\n  ".join(map(lambda t: f"- {t['tool']}: {t['tool_input']}", result["tool_usage"]))
             output += f'''
 ### {result["question"]}
 {result["answer"]["content"]}
@@ -89,6 +100,8 @@ async def test():
 Meta:      
 - Antwortzeit: {round(result["execution_duration_seconds"] * 1000)/1000}s
 - Kosten: {round(result["usage"]["content"]["cost"]*100)/100}$
+- Verwendete Tools:
+    {tools_string}
 '''
 
         outfile.write(output)

@@ -11,6 +11,7 @@ from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.schema import HumanMessage
 from DB_Classes import *
+from WebsocketCallbackHandler import WebsocketCallbackHandler
 
 from tools import create_elastic_tool
 
@@ -58,11 +59,14 @@ def start_backend():
                     tool
                 ]
 
+                handler = WebsocketCallbackHandler(websocket)
+
                 agent = initialize_agent(tools, ChatOpenAI(temperature=0, openai_api_key=open_ai_key,
                                                            model_name=open_ai_model),
                                          agent=AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
                                          verbose=True,
-                                         memory=memory)
+                                         memory=memory,
+                                         callbacks=[handler])
                 try:
                     with get_openai_callback() as cb:
                         async for message in websocket:
@@ -73,7 +77,7 @@ def start_backend():
                             prompt = message + "\n Antworte auf Deutsch verwende lediglich die gegeben Informationen. Belege deine Aussagen, indem du sie mit dem Index (beginnend mit 1) der Quelle versiehst, aus der die Information stammt, z.B.: 'Dies ist ein belegtes Beispiel [1].'"
                             try:
                                 result = agent.run(prompt)
-                                if len(sources)>0:
+                                if len(sources) > 0:
                                     result += "\n\nGefundene Informationen:"
                                     index = 1
                                     while len(sources) > 0:
@@ -84,10 +88,18 @@ def start_backend():
                                 result = "Ein Fehler ist aufgetreten"
                                 print(e)
                             await websocket.send(json.dumps({"type": "message", "content": result}))
-                            await websocket.send(json.dumps({"type": "usage", "content": {
-                                "tokens": {"total": cb.total_tokens, "prompt": cb.prompt_tokens,
-                                           "completion": cb.completion_tokens}, "cost": cb.total_cost,
-                                "successful_requests": cb.successful_requests}}))
+                            await websocket.send(json.dumps({
+                                "type": "usage",
+                                "content": {
+                                    "tokens": {
+                                        "total": cb.total_tokens,
+                                        "prompt": cb.prompt_tokens,
+                                        "completion": cb.completion_tokens
+                                    },
+                                    "cost": cb.total_cost,
+                                    "successful_requests": cb.successful_requests
+                                }
+                            }))
                             db_entry.cost = cb.total_cost
                             db_entry.tokens = cb.total_tokens
                             db_entry.save()

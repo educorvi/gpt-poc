@@ -65,6 +65,9 @@ socket.addEventListener("message", (event) => {
     case "usage":
       usage.value = message.content;
       break;
+    default:
+      console.debug(message)
+      break;
   }
 });
 socket.addEventListener("error", console.error);
