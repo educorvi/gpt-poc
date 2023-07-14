@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import asyncio
 import json
+import re
 
 import websockets
 import yaml
@@ -37,6 +38,14 @@ def start_backend():
             limit = data["monthly_limit"]
             if limit is None:
                 raise Exception("No monthly limit specified")
+            source_replace = data["source_replace"]
+            if source_replace is None:
+                raise Exception("Source replace is not specified")
+            sr_from = source_replace["from"]
+            sr_to = source_replace["to"]
+            if sr_from is None or sr_to is None:
+                raise Exception("Source replace is not fully specified")
+            sr_exp = re.compile(sr_from)
 
             async def respond(websocket):
                 sources = []
@@ -69,7 +78,7 @@ def start_backend():
                                     index = 1
                                     while len(sources) > 0:
                                         s = sources.pop(0)
-                                        result += f"\n- [{index}] [{s['title']}]({s['source']})"
+                                        result += f"\n- [{index}] [{s['title']}]({sr_exp.sub(sr_to, s['source'])})"
                                         index += 1
                             except Exception as e:
                                 result = "Ein Fehler ist aufgetreten"

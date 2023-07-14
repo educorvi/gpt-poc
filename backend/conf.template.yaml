@@ -14,5 +14,11 @@ ElasticSearch:
 Websocket:
   port: 8765
 
+# Replaces parts of the source url that is returned to the client
+source_replace:
+  # Supports regex
+  from: ""
+  to: ""
+
 # monthly_limit in dollars. The actual price might slightly overshoot the limit, because it is only checked after every query
 monthly_limit: 50
