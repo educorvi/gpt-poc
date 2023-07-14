@@ -33,6 +33,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@vitejs/plugin-vue", "virtual:08f859c73b15b841a86d1bfc5d3553478b1c0a314b14377170b64fb873394e4dd02bd391ab10d042e8483ead9baaf80e8faec439455f204bbf3e1d34761ed9a1#npm:4.2.1"],\
             ["@vue/tsconfig", "virtual:08f859c73b15b841a86d1bfc5d3553478b1c0a314b14377170b64fb873394e4dd02bd391ab10d042e8483ead9baaf80e8faec439455f204bbf3e1d34761ed9a1#npm:0.1.3"],\
             ["bootstrap", "virtual:08f859c73b15b841a86d1bfc5d3553478b1c0a314b14377170b64fb873394e4dd02bd391ab10d042e8483ead9baaf80e8faec439455f204bbf3e1d34761ed9a1#npm:5.2.3"],\
+            ["epic-spinners", "virtual:08f859c73b15b841a86d1bfc5d3553478b1c0a314b14377170b64fb873394e4dd02bd391ab10d042e8483ead9baaf80e8faec439455f204bbf3e1d34761ed9a1#npm:2.0.0"],\
             ["marked", "npm:5.1.0"],\
             ["npm-run-all", "npm:4.1.5"],\
             ["sass", "npm:1.62.1"],\
@@ -94,6 +95,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["@vitejs/plugin-vue", "virtual:08f859c73b15b841a86d1bfc5d3553478b1c0a314b14377170b64fb873394e4dd02bd391ab10d042e8483ead9baaf80e8faec439455f204bbf3e1d34761ed9a1#npm:4.2.1"],\
             ["@vue/tsconfig", "virtual:08f859c73b15b841a86d1bfc5d3553478b1c0a314b14377170b64fb873394e4dd02bd391ab10d042e8483ead9baaf80e8faec439455f204bbf3e1d34761ed9a1#npm:0.1.3"],\
             ["bootstrap", "virtual:08f859c73b15b841a86d1bfc5d3553478b1c0a314b14377170b64fb873394e4dd02bd391ab10d042e8483ead9baaf80e8faec439455f204bbf3e1d34761ed9a1#npm:5.2.3"],\
+            ["epic-spinners", "virtual:08f859c73b15b841a86d1bfc5d3553478b1c0a314b14377170b64fb873394e4dd02bd391ab10d042e8483ead9baaf80e8faec439455f204bbf3e1d34761ed9a1#npm:2.0.0"],\
             ["marked", "npm:5.1.0"],\
             ["npm-run-all", "npm:4.1.5"],\
             ["sass", "npm:1.62.1"],\
@@ -1046,6 +1048,28 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
           "packageLocation": "./.yarn/cache/env-paths-npm-2.2.1-7c7577428c-65b5df55a8.zip/node_modules/env-paths/",\
           "packageDependencies": [\
             ["env-paths", "npm:2.2.1"]\
+          ],\
+          "linkType": "HARD"\
+        }]\
+      ]],\
+      ["epic-spinners", [\
+        ["npm:2.0.0", {\
+          "packageLocation": "./.yarn/cache/epic-spinners-npm-2.0.0-8d7582d644-a23c0bb72f.zip/node_modules/epic-spinners/",\
+          "packageDependencies": [\
+            ["epic-spinners", "npm:2.0.0"]\
+          ],\
+          "linkType": "SOFT"\
+        }],\
+        ["virtual:08f859c73b15b841a86d1bfc5d3553478b1c0a314b14377170b64fb873394e4dd02bd391ab10d042e8483ead9baaf80e8faec439455f204bbf3e1d34761ed9a1#npm:2.0.0", {\
+          "packageLocation": "./.yarn/__virtual__/epic-spinners-virtual-90e683cd45/0/cache/epic-spinners-npm-2.0.0-8d7582d644-a23c0bb72f.zip/node_modules/epic-spinners/",\
+          "packageDependencies": [\
+            ["epic-spinners", "virtual:08f859c73b15b841a86d1bfc5d3553478b1c0a314b14377170b64fb873394e4dd02bd391ab10d042e8483ead9baaf80e8faec439455f204bbf3e1d34761ed9a1#npm:2.0.0"],\
+            ["@types/vue", null],\
+            ["vue", "npm:3.2.47"]\
+          ],\
+          "packagePeers": [\
+            "@types/vue",\
+            "vue"\
           ],\
           "linkType": "HARD"\
         }]\

@@ -1,20 +1,43 @@
 <template>
-  <div id="banner">Cost of this conversation: {{Math.round((usage.cost || 0)*100)/100}}$</div>
+  <div id="banner">Cost of this conversation: {{ Math.round((usage.cost || 0) * 100) / 100 }}$</div>
   <div id="messages">
     <chat-bubble v-for="message in messages" :message="message"></chat-bubble>
-    <div class="bubble-left" v-if="disabled_send" style="padding: calc(2 * var(--r) / 3)">
-      <div class="load-3">
-        <div class="line"></div>
-        <div class="line"></div>
-        <div class="line"></div>
-      </div>
+    <div class="bubble-left" v-if="!connected" style="padding: calc(2 * var(--r) / 3)">
+      <pixel-spinner
+          :animation-duration="2000"
+          :size="22"
+          color="#0d6efd"
+      />
+    </div>
+    <div class="bubble-left" v-if="state!=='done'" style="padding: calc(2 * var(--r) / 3)">
+     <span class="status">
+       <pixel-spinner
+           v-if="state==='searching'"
+           class="status-icon"
+           :animation-duration="2000"
+           :size="22"
+           color="#0d6efd"
+       />
+       <span v-else style="color: green;height: 22px; width: 22px; text-align: center"
+             class="status-icon">&#10004;</span>
+     Suchen nach relevanten Informationen
+     </span>
+      <span class="status">
+       <pixel-spinner
+           class="status-icon"
+           :animation-duration="state==='searching'?0:2000"
+           :size="22"
+           color="#0d6efd"
+       />
+     Antwort formulieren
+     </span>
     </div>
   </div>
   <div>
     <form id="send_div" @submit="sendMessage">
       <input id="send_input" v-on:keyup.enter="" v-model="input_message" class="form-control"
-           :disabled="disabled_send" minlength="8" required/>
-      <input type="submit" class="btn btn-primary" :disabled="disabled_send"/>
+             :disabled="state!=='done' || !connected" minlength="8" required/>
+      <input type="submit" class="btn btn-primary" :disabled="state!=='done' || !connected"/>
     </form>
   </div>
 </template>
@@ -22,6 +45,7 @@
 <script setup lang="ts">
 import {nextTick, ref} from "vue";
 import ChatBubble from "@/components/ChatBubble.vue";
+import {PixelSpinner} from 'epic-spinners';
 
 export type Message = {
   sender: "user" | "assistant",
@@ -32,7 +56,8 @@ const props = defineProps<{
   websocket_url: string
 }>()
 
-const disabled_send = ref(true);
+const connected = ref(false);
+const state = ref<"searching" | "writing" | "done">("done");
 
 const input_message = ref("");
 
@@ -46,14 +71,15 @@ messages.value.push({sender: "assistant", text: `Connecting...`})
 const socket = new WebSocket(props.websocket_url);
 socket.addEventListener("open", () => {
   messages.value.push({sender: "assistant", text: `Connected to ${props.websocket_url}`})
-  disabled_send.value = false
+  connected.value = true
 });
 socket.addEventListener("message", (event) => {
   const message = JSON.parse(event.data);
+  console.debug(message)
   switch (message.type) {
     case "message":
+      state.value = "done";
       messages.value.push({sender: "assistant", text: message.content});
-      disabled_send.value = false;
       nextTick(() => {
         document.getElementById("send_input")?.focus();
         const messages = document.getElementById("messages");
@@ -65,8 +91,16 @@ socket.addEventListener("message", (event) => {
     case "usage":
       usage.value = message.content;
       break;
+    case "event":
+      switch (message.content.event) {
+        case "tool_end":
+          state.value = "writing";
+          break;
+        default:
+          break;
+      }
+      break;
     default:
-      console.debug(message)
       break;
   }
 });
@@ -74,7 +108,7 @@ socket.addEventListener("error", console.error);
 
 function sendMessage(event: Event) {
   event.preventDefault();
-  disabled_send.value = true;
+  state.value = "searching";
   messages.value.push({sender: "user", text: input_message.value});
   socket.send(input_message.value)
   input_message.value = "";
@@ -89,8 +123,15 @@ function sendMessage(event: Event) {
 
 <style lang="scss">
 @import "../assets/bubble";
-@import "../assets/loading_animation.css";
 @import "../assets/bootstrap";
+
+.status {
+  display: flex;
+
+  .status-icon {
+    margin-right: 10px;
+  }
+}
 
 #banner {
   position: absolute;

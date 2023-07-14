@@ -1,5 +1,5 @@
 <template>
-<div :class="message.sender === 'assistant'?'bubble-left':'bubble-right'"><span v-html="marked.parse(message.text)"/></div>
+<div :class="message.sender === 'assistant'?'bubble-left':'bubble-right'"><span v-html="marked.parse(message.text, {mangle: false, headerIds: false})"/></div>
 </template>
 
 <script lang="ts" setup>

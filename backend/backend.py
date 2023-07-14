@@ -6,12 +6,12 @@ import re
 import websockets
 import yaml
 from langchain.agents import initialize_agent, AgentType
-from langchain.callbacks import get_openai_callback
+from langchain.callbacks import get_openai_callback, StdOutCallbackHandler
 from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.schema import HumanMessage
 from DB_Classes import *
-from WebsocketCallbackHandler import WebsocketCallbackHandler
+from WebsocketCallbackHandler import WebsocketCallbackHandler, StreamingWebsocketHandler
 
 from tools import create_elastic_tool
 
@@ -61,12 +61,19 @@ def start_backend():
 
                 handler = WebsocketCallbackHandler(websocket)
 
-                agent = initialize_agent(tools, ChatOpenAI(temperature=0, openai_api_key=open_ai_key,
-                                                           model_name=open_ai_model),
-                                         agent=AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
-                                         verbose=True,
-                                         memory=memory,
-                                         callbacks=[handler])
+                agent = initialize_agent(
+                    tools,
+                    ChatOpenAI(
+                        temperature=0, openai_api_key=open_ai_key,
+                        model_name=open_ai_model,
+                        # streaming=True,
+                        callbacks=[StreamingWebsocketHandler(websocket)]
+                    ),
+                    agent=AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
+                    verbose=False,
+                    memory=memory,
+                    # callbacks=[handler]
+                )
                 try:
                     with get_openai_callback() as cb:
                         async for message in websocket:
@@ -76,7 +83,9 @@ def start_backend():
                                 continue
                             prompt = message + "\n Antworte auf Deutsch verwende lediglich die gegeben Informationen. Belege deine Aussagen, indem du sie mit dem Index (beginnend mit 1) der Quelle versiehst, aus der die Information stammt, z.B.: 'Dies ist ein belegtes Beispiel [1].'"
                             try:
-                                result = agent.run(prompt)
+                                task = asyncio.create_task(asyncio.to_thread(agent.run, prompt, callbacks=[handler]))
+                                await task
+                                result = task.result()
                                 if len(sources) > 0:
                                     result += "\n\nGefundene Informationen:"
                                     index = 1
