@@ -1,5 +1,5 @@
 <template>
-  <div id="banner">Cost of this conversation: {{ Math.round((usage.cost || 0) * 100) / 100 }}$</div>
+  <div id="banner">Gesamtkosten dieser Unterhaltung: {{ Math.round((usage.cost || 0) * 100) / 100 }}$</div>
   <div id="messages">
     <chat-bubble v-for="message in messages" :message="message"></chat-bubble>
     <div class="bubble-left" v-if="!connected" style="padding: calc(2 * var(--r) / 3)">
@@ -65,12 +65,12 @@ const usage = ref<Record<string, any>>({})
 
 const messages = ref<Message[]>([])
 
-messages.value.push({sender: "assistant", text: `Connecting...`})
+messages.value.push({sender: "assistant", text: `Verbindung wird aufgebaut...`})
 
 
 const socket = new WebSocket(props.websocket_url);
 socket.addEventListener("open", () => {
-  messages.value.push({sender: "assistant", text: `Connected to ${props.websocket_url}`})
+  messages.value.push({sender: "assistant", text: `Verbindung hergestellt zu ${props.websocket_url}`})
   connected.value = true
 });
 socket.addEventListener("message", (event) => {
