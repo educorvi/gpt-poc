@@ -1,0 +1,3 @@
+[submodule "backend/test/results"]
+	path = backend/test/results
+	url = git@github.com:educorvi/gpt-poc-test-results.git
