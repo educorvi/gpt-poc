@@ -2,35 +2,50 @@
   <div id="banner">Gesamtkosten dieser Unterhaltung: {{ Math.round((usage.cost || 0) * 100) / 100 }}$</div>
   <div id="messages">
     <chat-bubble v-for="message in messages" :message="message"></chat-bubble>
-    <div class="bubble-left" v-if="!connected" style="padding: calc(2 * var(--r) / 3)">
-      <pixel-spinner
-          :animation-duration="2000"
-          :size="22"
-          color="#0d6efd"
-      />
-    </div>
+<!--    <div class="bubble-left" v-if="!connected" style="padding: calc(2 * var(&#45;&#45;r) / 3)">-->
+<!--      &lt;!&ndash;      <pixel-spinner&ndash;&gt;-->
+<!--      &lt;!&ndash;          :animation-duration="2000"&ndash;&gt;-->
+<!--      &lt;!&ndash;          :size="22"&ndash;&gt;-->
+<!--      &lt;!&ndash;          color="#0d6efd"&ndash;&gt;-->
+<!--      &lt;!&ndash;      />&ndash;&gt;-->
+<!--      <div class="hollow-dots-spinner">-->
+<!--        <div class="dot"></div>-->
+<!--        <div class="dot"></div>-->
+<!--        <div class="dot"></div>-->
+<!--      </div>-->
+<!--    </div>-->
     <div class="bubble-left" v-if="state!=='done'" style="padding: calc(2 * var(--r) / 3)">
-     <span class="status">
-       <pixel-spinner
-           v-if="state==='searching'"
-           class="status-icon"
-           :animation-duration="2000"
-           :size="22"
-           color="#0d6efd"
-       />
-       <span v-else style="color: green;height: 22px; width: 22px; text-align: center"
-             class="status-icon">&#10004;</span>
-     Suchen nach relevanten Informationen
-     </span>
-      <span class="status">
-       <pixel-spinner
-           class="status-icon"
-           :animation-duration="state==='searching'?0:2000"
-           :size="22"
-           color="#0d6efd"
-       />
-     Antwort formulieren
-     </span>
+      <div class="status">
+        <!--       <pixel-spinner-->
+        <!--           v-if="state==='searching'"-->
+        <!--           class="status-icon"-->
+        <!--           :animation-duration="2000"-->
+        <!--           :size="22"-->
+        <!--           color="#0d6efd"-->
+        <!--       />-->
+        <div class="hollow-dots-spinner status-icon" v-if="state==='searching'">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+        <span v-else style="color: green;height: 22px; width: 22px; text-align: center"
+              class="status-icon">&#10004;</span>
+        Suchen nach relevanten Informationen
+      </div>
+      <div class="status">
+        <!--       <pixel-spinner-->
+        <!--           class="status-icon"-->
+        <!--           :animation-duration="state==='searching'?0:2000"-->
+        <!--           :size="22"-->
+        <!--           color="#0d6efd"-->
+        <!--       />-->
+        <div class="hollow-dots-spinner status-icon">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+        Antwort formulieren
+      </div>
     </div>
   </div>
   <div>
@@ -45,7 +60,6 @@
 <script setup lang="ts">
 import {nextTick, ref} from "vue";
 import ChatBubble from "@/components/ChatBubble.vue";
-import {PixelSpinner} from 'epic-spinners';
 
 export type Message = {
   sender: "user" | "assistant",
@@ -127,6 +141,7 @@ function sendMessage(event: Event) {
 
 .status {
   display: flex;
+  align-items: center;
 
   .status-icon {
     margin-right: 10px;
@@ -175,5 +190,105 @@ function sendMessage(event: Event) {
   overflow-y: scroll;
   overflow-x: hidden;
   z-index: 0;
+}
+
+$size: 22px;
+
+.pixel-spinner, .pixel-spinner * {
+  box-sizing: border-box;
+}
+
+.pixel-spinner {
+  height: 70px;
+  width: 70px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.pixel-spinner .pixel-spinner-inner {
+  width: calc(70px / 7);
+  height: calc(70px / 7);
+  background-color: #0d6efd;
+  color: #0d6efd;
+  box-shadow: 15px 15px 0 0,
+  -15px -15px 0 0,
+  15px -15px 0 0,
+  -15px 15px 0 0,
+  0 15px 0 0,
+  15px 0 0 0,
+  -15px 0 0 0,
+  0 -15px 0 0;
+  animation: pixel-spinner-animation 2000ms linear infinite;
+}
+
+@keyframes pixel-spinner-animation {
+  50% {
+    box-shadow: 20px 20px 0px 0px,
+    -20px -20px 0px 0px,
+    20px -20px 0px 0px,
+    -20px 20px 0px 0px,
+    0px 10px 0px 0px,
+    10px 0px 0px 0px,
+    -10px 0px 0px 0px,
+    0px -10px 0px 0px;
+  }
+  75% {
+    box-shadow: 20px 20px 0px 0px,
+    -20px -20px 0px 0px,
+    20px -20px 0px 0px,
+    -20px 20px 0px 0px,
+    0px 10px 0px 0px,
+    10px 0px 0px 0px,
+    -10px 0px 0px 0px,
+    0px -10px 0px 0px;
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.hollow-dots-spinner, .hollow-dots-spinner * {
+  box-sizing: border-box;
+}
+
+.hollow-dots-spinner {
+  height: 5px;
+  width: calc(10px * 3);
+}
+
+.hollow-dots-spinner .dot {
+  width: 5px;
+  height: 5px;
+  margin: 0 calc(5px / 2);
+  border: calc(5px / 5) solid #0d6efd;
+  border-radius: 50%;
+  float: left;
+  transform: scale(0);
+  animation: hollow-dots-spinner-animation 1000ms ease infinite 0ms;
+}
+
+.hollow-dots-spinner .dot:nth-child(1) {
+  animation-delay: calc(300ms * 1);
+}
+
+.hollow-dots-spinner .dot:nth-child(2) {
+  animation-delay: calc(300ms * 2);
+}
+
+.hollow-dots-spinner .dot:nth-child(3) {
+  animation-delay: calc(300ms * 3);
+
+}
+
+@keyframes hollow-dots-spinner-animation {
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 </style>
