@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import asyncio
 import json
 import re
@@ -47,6 +48,18 @@ def start_backend():
             if sr_from is None or sr_to is None:
                 raise Exception("Source replace is not fully specified")
             sr_exp = re.compile(sr_from)
+
+            parser = argparse.ArgumentParser(prog='gpt-poc-backend',
+                                             description='Backend for the chatgpt proof of concept')
+            parser.add_argument('-m', '--model', help='Select the openai model, that the chatbot should use')
+            parser.add_argument('-p', '--port', help='Port that the backend will run on')
+            args = parser.parse_args()
+
+            if args.model is not None:
+                open_ai_model = args.model
+
+            if args.port is not None:
+                port = args.port
 
             async def respond(websocket):
                 sources = []
