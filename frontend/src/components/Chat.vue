@@ -155,7 +155,7 @@ function sendMessage(event: Event) {
   background-color: $primary;
   color: $light;
   height: 1.5em;
-  z-index: 1000;
+  z-index: 2;
   font-size: 1em;
 }
 
