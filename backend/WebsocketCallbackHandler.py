@@ -21,9 +21,11 @@ class StreamingWebsocketHandler(BaseCallbackHandler):
 
 class WebsocketCallbackHandler(BaseCallbackHandler):
     websocket: Any
+    verbose: bool
 
-    def __init__(self, websocket):
+    def __init__(self, websocket, verbose: bool = False):
         self.websocket = websocket
+        self.verbose = verbose
         super().__init__()
 
     def send_event(self, event: str, data: Any) -> None:
@@ -40,22 +42,29 @@ class WebsocketCallbackHandler(BaseCallbackHandler):
             self, serialized: Dict[str, Any], prompts: List[str], **kwargs: Any
     ) -> Any:
         """Run when LLM starts running."""
+        if self.verbose:
+            print(prompts)
         self.send_event("llm_start", {"serialized": serialized, "prompts": prompts})
 
     def on_chat_model_start(
             self, serialized: Dict[str, Any], messages: List[List[BaseMessage]], **kwargs: Any
     ) -> Any:
         """Run when Chat Model starts running."""
+        if self.verbose:
+            print(messages)
         self.send_event("chat_model_start", {})
 
     def on_llm_end(self, response: LLMResult, **kwargs: Any) -> Any:
         """Run when LLM ends running."""
+        if self.verbose:
+            print(response)
         self.send_event("llm_end", {})
 
     def on_llm_error(
             self, error: Union[Exception, KeyboardInterrupt], **kwargs: Any
     ) -> Any:
         """Run when LLM errors."""
+        print(error)
         self.send_event("llm_error", error)
 
     def on_chain_start(
@@ -72,6 +81,7 @@ class WebsocketCallbackHandler(BaseCallbackHandler):
             self, error: Union[Exception, KeyboardInterrupt], **kwargs: Any
     ) -> Any:
         """Run when chain errors."""
+        print(error)
         self.send_event("chain_error", error)
 
     def on_tool_start(
@@ -88,6 +98,7 @@ class WebsocketCallbackHandler(BaseCallbackHandler):
             self, error: Union[Exception, KeyboardInterrupt], **kwargs: Any
     ) -> Any:
         """Run when tool errors."""
+        print(error)
         self.send_event("tool_error", error)
 
     def on_text(self, text: str, **kwargs: Any) -> Any:

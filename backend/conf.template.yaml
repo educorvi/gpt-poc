@@ -1,7 +1,14 @@
+# "openai" or "huggingface"
+provider: "huggingface"
+
 OpenAI:
   API_KEY:
   model:
     main: gpt-3.5-turbo-16k
+
+HuggingFace:
+  API_KEY:
+  endpoint:
 
 ElasticSearch:
   url:

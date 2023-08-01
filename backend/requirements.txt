@@ -1,14 +1,14 @@
 websockets~=11.0.3
 
-PyYAML~=6.0
+PyYAML==6.0.1
 
-langchain~=0.0.219
+langchain==0.0.249
 
-elasticsearch~=8.8.0
+elasticsearch==8.9.0
 
 openai~=0.27.7
 
-aiohttp==3.8.4
+aiohttp==3.8.5
 
 peewee~=3.16.2
 
@@ -16,4 +16,8 @@ setuptools~=68.0.0
 
 stdeb
 
-rich
+rich==13.5.1
+
+transformers~=4.31.0
+
+huggingface_hub~=0.16.4
