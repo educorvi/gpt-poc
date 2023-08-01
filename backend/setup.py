@@ -3,11 +3,12 @@ from setuptools import setup
 requirements = [
     "websockets~=11.0.3",
     "PyYAML~=6.0",
-    "langchain~=0.0.219",
+    "langchain~=0.0.248",
     "elasticsearch~=8.8.0",
     "openai~=0.27.7",
     "aiohttp==3.8.4",
     "peewee==3.16.2"
+    "transformers~=4.31.0 "
 ]
 
 description = open("README.md").read()

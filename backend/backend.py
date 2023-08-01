@@ -9,6 +9,7 @@ import yaml
 from langchain.agents import initialize_agent, AgentType
 from langchain.callbacks import get_openai_callback, StdOutCallbackHandler
 from langchain.chat_models import ChatOpenAI
+from langchain.llms import HuggingFaceEndpoint
 from langchain.memory import ConversationBufferMemory
 from langchain.schema import HumanMessage
 from DB_Classes import *
@@ -31,12 +32,25 @@ def start_backend():
             es_result_size = data["ElasticSearch"]["result_size"]
             if es_url is None or es_index is None or es_result_size is None or es_result_number is None:
                 raise Exception("ElasticSearch config incomplete")
-            open_ai_key = data["OpenAI"]["API_KEY"]
-            if open_ai_key is None:
-                raise Exception("No OpenAI key specified")
-            open_ai_model = data["OpenAI"]["model"]["main"]
-            if open_ai_model is None:
-                raise Exception("No OpenAI main model specified")
+            provider = data["provider"]
+            if provider is None:
+                raise Exception("No provider specified")
+            if not (provider == "openai" or provider == "huggingface"):
+                raise Exception("Provider not supported")
+            if provider == "openai":
+                open_ai_key = data["OpenAI"]["API_KEY"]
+                if open_ai_key is None:
+                    raise Exception("No OpenAI key specified")
+                open_ai_model = data["OpenAI"]["model"]["main"]
+                if open_ai_model is None:
+                    raise Exception("No OpenAI main model specified")
+            if provider == "huggingface":
+                huggingface_key: str = data["HuggingFace"]["API_KEY"]
+                if huggingface_key is None:
+                    raise Exception("No HuggingFace key specified")
+                endpoint: str = data["HuggingFace"]["endpoint"]
+                if endpoint is None:
+                    raise Exception("No HuggingFace endpoint specified")
             limit = data["monthly_limit"]
             if limit is None:
                 raise Exception("No monthly limit specified")
@@ -72,20 +86,38 @@ def start_backend():
                     tool
                 ]
 
-                handler = WebsocketCallbackHandler(websocket)
+                handler = WebsocketCallbackHandler(websocket, verbose=True)
 
-                agent = initialize_agent(
-                    tools,
-                    ChatOpenAI(
+                if provider == "openai":
+                    model = ChatOpenAI(
                         temperature=0, openai_api_key=open_ai_key,
                         model_name=open_ai_model,
                         # streaming=True,
-                        callbacks=[StreamingWebsocketHandler(websocket)]
-                    ),
+                        # callbacks=[StreamingWebsocketHandler(websocket)]
+                    )
+                else:
+                    model = HuggingFaceEndpoint(
+                        endpoint_url=endpoint,
+                        huggingfacehub_api_token=huggingface_key,
+                        model_kwargs={"temperature": 0.1, "max_new_length": 5000},
+                        task="text-generation",
+                        # callbacks=[StreamingWebsocketHandler(websocket)],
+                    )
+                # model = HuggingFacePipeline.from_model_id(
+                #     model_id="OpenAssistant/falcon-7b-sft-mix-2000",
+                #     task="text-generation",
+                #     model_kwargs={"temperature": 0, "max_length": 16000, "trust_remote_code": True},
+                #     callbacks=[StreamingWebsocketHandler(websocket)],
+                #     device=-1
+                # )
+
+                agent = initialize_agent(
+                    tools,
+                    model,
                     agent=AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
-                    verbose=False,
+                    verbose=True,
                     memory=memory,
-                    # callbacks=[handler]
+                    callbacks=[handler]
                 )
                 try:
                     with get_openai_callback() as cb:
