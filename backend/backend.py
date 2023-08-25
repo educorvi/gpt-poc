@@ -99,7 +99,7 @@ def start_backend():
                     model = HuggingFaceEndpoint(
                         endpoint_url=endpoint,
                         huggingfacehub_api_token=huggingface_key,
-                        model_kwargs={"temperature": 0.1, "max_new_length": 5000},
+                        model_kwargs={"temperature": 0.1, "max_new_tokens": 2000},
                         task="text-generation",
                         # callbacks=[StreamingWebsocketHandler(websocket)],
                     )
