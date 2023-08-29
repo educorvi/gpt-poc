@@ -17,3 +17,5 @@ setuptools~=68.0.0
 stdeb
 
 rich
+
+typesense

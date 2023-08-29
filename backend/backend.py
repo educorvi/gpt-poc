@@ -14,10 +14,18 @@ from langchain.schema import HumanMessage
 from DB_Classes import *
 from WebsocketCallbackHandler import WebsocketCallbackHandler, StreamingWebsocketHandler
 
-from tools import create_elastic_tool
+from tools import create_elastic_tool, create_typesense_tool
 
 
 def start_backend():
+    parser = argparse.ArgumentParser(prog='gpt-poc-backend',
+                                     description='Backend for the chatgpt proof of concept')
+    parser.add_argument('-m', '--model', help='Select the openai model, that the chatbot should use')
+    parser.add_argument('-p', '--port', help='Port that the backend will run on')
+    parser.add_argument('-s', '--search-engine', help='elasticsearch or typesense')
+    args = parser.parse_args()
+    # print(args)
+
     print(f"Cost of usage for the current month thus far: {round(get_cost_of_current_month() * 100) / 100}$")
     with open("/etc/gpt-poc/conf.yaml", "r") as stream:
         try:
@@ -25,12 +33,31 @@ def start_backend():
             port = data["Websocket"]["port"]
             if port is None:
                 raise Exception("No port specified")
-            es_url = data["ElasticSearch"]["url"]
-            es_index = data["ElasticSearch"]["index"]
-            es_result_number = data["ElasticSearch"]["result_number"]
-            es_result_size = data["ElasticSearch"]["result_size"]
-            if es_url is None or es_index is None or es_result_size is None or es_result_number is None:
-                raise Exception("ElasticSearch config incomplete")
+            se = data["SearchEngine"]
+            if args.search_engine is not None:
+                se = args.search_engine
+            if se is None:
+                raise Exception("No search engine specified")
+            if se == "elasticsearch":
+                es_url = data["ElasticSearch"]["url"]
+                es_index = data["ElasticSearch"]["index"]
+                es_result_number = data["ElasticSearch"]["result_number"]
+                es_result_size = data["ElasticSearch"]["result_size"]
+                if es_url is None or es_index is None or es_result_size is None or es_result_number is None:
+                    raise Exception("ElasticSearch config incomplete")
+            elif se == "typesense":
+                ts_host = data["Typesense"]["host"]
+                ts_port = data["Typesense"]["port"]
+                ts_protocol = data["Typesense"]["protocol"]
+                ts_collection = data["Typesense"]["collection"]
+                ts_result_number = data["Typesense"]["result_number"]
+                ts_result_size = data["Typesense"]["result_size"]
+                ts_api_key = data["Typesense"]["api_key"]
+                if ts_host is None or ts_port is None or ts_protocol is None or ts_collection is None or ts_result_size is None or ts_result_number is None or ts_api_key is None:
+                    raise Exception("Typesense config incomplete")
+            else:
+                raise Exception("Search engine not supported")
+
             open_ai_key = data["OpenAI"]["API_KEY"]
             if open_ai_key is None:
                 raise Exception("No OpenAI key specified")
@@ -49,12 +76,6 @@ def start_backend():
                 raise Exception("Source replace is not fully specified")
             sr_exp = re.compile(sr_from)
 
-            parser = argparse.ArgumentParser(prog='gpt-poc-backend',
-                                             description='Backend for the chatgpt proof of concept')
-            parser.add_argument('-m', '--model', help='Select the openai model, that the chatbot should use')
-            parser.add_argument('-p', '--port', help='Port that the backend will run on')
-            args = parser.parse_args()
-
             if args.model is not None:
                 open_ai_model = args.model
 
@@ -63,7 +84,13 @@ def start_backend():
 
             async def respond(websocket):
                 sources = []
-                tool = create_elastic_tool(es_url, es_index, es_result_size, es_result_number, sources)
+                if se == "elasticsearch":
+                    tool = create_elastic_tool(es_url, es_index, es_result_size, es_result_number, sources)
+                elif se == "typesense":
+                    tool = create_typesense_tool(ts_host, ts_port, ts_protocol, ts_api_key, ts_collection,
+                                                 ts_result_size, ts_result_number, sources)
+                else:
+                    raise Exception("Search engine not supported")
 
                 memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
                 db_entry = Chat.create()
@@ -94,7 +121,7 @@ def start_backend():
                                 await websocket.send(
                                     json.dumps({"type": "message", "content": "The monthly limit has been reached."}))
                                 continue
-                            prompt = message + "\n Antworte auf Deutsch verwende lediglich die gegeben Informationen. Belege deine Aussagen, indem du sie mit dem Index (beginnend mit 1) der Quelle versiehst, aus der die Information stammt, z.B.: 'Dies ist ein belegtes Beispiel [1].'"
+                            prompt = message + "\n Antworte auf Deutsch verwende lediglich die gegeben Informationen. Belege deine Aussagen, indem du sie mit dem Index (beginnend mit 1) der Quelle versiehst, aus der die Information stammt, z.B.: 'Dies ist ein belegtes Beispiel [i].'"
                             try:
                                 task = asyncio.create_task(asyncio.to_thread(agent.run, prompt, callbacks=[handler]))
                                 await task

@@ -3,6 +3,10 @@ OpenAI:
   model:
     main: gpt-3.5-turbo-16k
 
+
+# Searchengine: elasticsearch or typesense
+SearchEngine: elasticsearch
+
 ElasticSearch:
   url:
   index:
@@ -10,6 +14,17 @@ ElasticSearch:
   result_number: 4
   # Number of characters per result
   result_size: 300
+
+Typesense:
+  host:
+  port:
+  protocol:
+  collection:
+  # Number of results returned per query
+  result_number: 4
+  # Number of tokens before and after highlight
+  result_size: 150
+  api_key:
 
 Websocket:
   port: 8765

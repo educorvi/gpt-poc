@@ -7,7 +7,8 @@ requirements = [
     "elasticsearch~=8.8.0",
     "openai~=0.27.7",
     "aiohttp==3.8.4",
-    "peewee==3.16.2"
+    "peewee==3.16.2",
+    "typesense~0.16.0"
 ]
 
 description = open("README.md").read()
@@ -21,7 +22,8 @@ setup(
     author_email="julian.pollinger@educorvi.de",
     description="A proof of concept for chatgpt integrated with elasticsearch",
     license="MIT",
-    py_modules=["backend", "customElasticSearchRetriever", "tools", "DB_Classes", "WebsocketCallbackHandler"],
+    py_modules=["backend", "customElasticSearchRetriever", "customTypesenseRetriever", "tools", "DB_Classes",
+                "WebsocketCallbackHandler"],
     long_description_content_type="text/markdown",
     long_description=description,
     scripts=["gpt-poc-backend"],
