@@ -19,3 +19,5 @@ stdeb
 rich
 
 typesense
+
+deepl~=1.15.0

@@ -89,9 +89,9 @@ socket.addEventListener("open", () => {
 });
 socket.addEventListener("message", (event) => {
   const message = JSON.parse(event.data);
-  console.debug(message)
   switch (message.type) {
     case "message":
+      console.debug(message)
       state.value = "done";
       messages.value.push({sender: "assistant", text: message.content});
       nextTick(() => {
@@ -103,9 +103,11 @@ socket.addEventListener("message", (event) => {
       });
       break;
     case "usage":
+      console.debug(message)
       usage.value = message.content;
       break;
     case "event":
+      console.debug(message.content)
       switch (message.content.event) {
         case "tool_end":
           state.value = "writing";
