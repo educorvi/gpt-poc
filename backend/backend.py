@@ -16,6 +16,14 @@ from WebsocketCallbackHandler import WebsocketCallbackHandler, StreamingWebsocke
 
 from tools import create_elastic_tool, create_typesense_tool
 
+import deepl
+
+
+def translate_if_source_lang(translator, message, source_lang) -> str:
+    if source_lang is None or translator is None:
+        return message
+    return translator.translate_text(message, target_lang=source_lang).text
+
 
 def start_backend():
     parser = argparse.ArgumentParser(prog='gpt-poc-backend',
@@ -30,6 +38,13 @@ def start_backend():
     with open("/etc/gpt-poc/conf.yaml", "r") as stream:
         try:
             data = yaml.safe_load(stream)
+            deepl_api_key = None
+            if "DeepL" in data:
+                deepl_api_key = data["DeepL"]["API_KEY"]
+            translator = None
+            if deepl_api_key is not None:
+                translator = deepl.Translator(deepl_api_key)
+
             port = data["Websocket"]["port"]
             if port is None:
                 raise Exception("No port specified")
@@ -117,26 +132,37 @@ def start_backend():
                 try:
                     with get_openai_callback() as cb:
                         async for message in websocket:
-                            if (get_cost_of_current_month() >= limit):
+                            source_lang = None
+                            if translator is not None:
+                                trans = translator.translate_text(message, target_lang="DE")
+                                message = trans.text
+                                source_lang = trans.detected_source_lang
+
+                            if get_cost_of_current_month() >= limit:
                                 await websocket.send(
-                                    json.dumps({"type": "message", "content": "The monthly limit has been reached."}))
+                                    json.dumps({"type": "message",
+                                                "content": f"{translate_if_source_lang(translator, 'Das monatliche Limit wurde erreicht. Bitte wende dich an den Administrator.', source_lang)}"}))
                                 continue
-                            prompt = message + "\n Antworte auf Deutsch verwende lediglich die gegeben Informationen. Belege deine Aussagen, indem du sie mit dem Index (beginnend mit 1) der Quelle versiehst, aus der die Information stammt, z.B.: 'Dies ist ein belegtes Beispiel [i].'"
+
+                            prompt = message + "\n Antworte auf Deutsch verwende lediglich die gegeben Informationen. Zitiere deine Aussagen, indem du sie mit dem Index (beginnend mit 1) der Quelle versiehst, aus der die Information stammt, z.B.: 'Dies ist ein zitiertes Beispiel [i].'"
                             try:
                                 task = asyncio.create_task(asyncio.to_thread(agent.run, prompt, callbacks=[handler]))
                                 await task
                                 result = task.result()
+                                result = translate_if_source_lang(translator, result, source_lang)
                                 if len(sources) > 0:
-                                    result += "\n\nGefundene Informationen:"
+                                    result += f"\n\n{translate_if_source_lang(translator, 'Gefundene Informationen:', source_lang)}"
                                     index = 1
                                     while len(sources) > 0:
                                         s = sources.pop(0)
                                         result += f"\n- [{index}] [{s['title']}]({sr_exp.sub(sr_to, s['source'])})"
                                         index += 1
                             except Exception as e:
-                                result = "Ein Fehler ist aufgetreten"
+                                result = translate_if_source_lang(translator, "Es ist ein Fehler aufgetreten.",
+                                                                  source_lang)
                                 print(e)
-                            await websocket.send(json.dumps({"type": "message", "content": result}))
+                            await websocket.send(json.dumps({"type": "message",
+                                                             "content": result}))
                             await websocket.send(json.dumps({
                                 "type": "usage",
                                 "content": {

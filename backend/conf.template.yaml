@@ -29,6 +29,9 @@ Typesense:
 Websocket:
   port: 8765
 
+DeepL:
+  API_KEY:
+
 # Replaces parts of the source url that is returned to the client
 source_replace:
   # Supports regex
