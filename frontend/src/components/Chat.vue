@@ -87,13 +87,8 @@ socket.addEventListener("open", () => {
   messages.value.push({sender: "assistant", text: `Verbindung hergestellt zu ${props.websocket_url}`})
   connected.value = true
 });
-socket.addEventListener("message", (event) => {
-  const message = JSON.parse(event.data);
-  console.debug(message)
-  switch (message.type) {
-    case "message":
-      state.value = "done";
-      messages.value.push({sender: "assistant", text: message.content});
+function addMessage(message: string){
+  messages.value.push({sender: "assistant", text: message});
       nextTick(() => {
         document.getElementById("send_input")?.focus();
         const messages = document.getElementById("messages");
@@ -101,6 +96,14 @@ socket.addEventListener("message", (event) => {
           messages.scrollTop = messages.scrollHeight;
         }
       });
+}
+socket.addEventListener("message", (event) => {
+  const message = JSON.parse(event.data);
+  console.debug(message)
+  switch (message.type) {
+    case "message":
+      state.value = "done";
+      addMessage(message.content)
       break;
     case "usage":
       usage.value = message.content;
@@ -109,6 +112,9 @@ socket.addEventListener("message", (event) => {
       switch (message.content.event) {
         case "tool_end":
           state.value = "writing";
+          break;
+        case "agent_action":
+          addMessage(`Starte ${message.content.data.tool} mit Input '<i>${message.content.data.tool_input}</i>'`)
           break;
         default:
           break;
