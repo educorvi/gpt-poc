@@ -56,7 +56,7 @@ class WebsocketCallbackHandler(BaseCallbackHandler):
             self, error: Union[Exception, KeyboardInterrupt], **kwargs: Any
     ) -> Any:
         """Run when LLM errors."""
-        self.send_event("llm_error", error)
+        self.send_event("llm_error", str(error))
 
     def on_chain_start(
             self, serialized: Dict[str, Any], inputs: Dict[str, Any], **kwargs: Any
@@ -72,7 +72,7 @@ class WebsocketCallbackHandler(BaseCallbackHandler):
             self, error: Union[Exception, KeyboardInterrupt], **kwargs: Any
     ) -> Any:
         """Run when chain errors."""
-        self.send_event("chain_error", error)
+        self.send_event("chain_error", str(error))
 
     def on_tool_start(
             self, serialized: Dict[str, Any], input_str: str, **kwargs: Any
@@ -88,7 +88,7 @@ class WebsocketCallbackHandler(BaseCallbackHandler):
             self, error: Union[Exception, KeyboardInterrupt], **kwargs: Any
     ) -> Any:
         """Run when tool errors."""
-        self.send_event("tool_error", error)
+        self.send_event("tool_error", str(error))
 
     def on_text(self, text: str, **kwargs: Any) -> Any:
         """Run on arbitrary text."""
