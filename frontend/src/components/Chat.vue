@@ -2,18 +2,18 @@
   <div id="banner">Gesamtkosten dieser Unterhaltung: {{ Math.round((usage.cost || 0) * 100) / 100 }}$</div>
   <div id="messages">
     <chat-bubble v-for="message in messages" :message="message"></chat-bubble>
-<!--    <div class="bubble-left" v-if="!connected" style="padding: calc(2 * var(&#45;&#45;r) / 3)">-->
-<!--      &lt;!&ndash;      <pixel-spinner&ndash;&gt;-->
-<!--      &lt;!&ndash;          :animation-duration="2000"&ndash;&gt;-->
-<!--      &lt;!&ndash;          :size="22"&ndash;&gt;-->
-<!--      &lt;!&ndash;          color="#0d6efd"&ndash;&gt;-->
-<!--      &lt;!&ndash;      />&ndash;&gt;-->
-<!--      <div class="hollow-dots-spinner">-->
-<!--        <div class="dot"></div>-->
-<!--        <div class="dot"></div>-->
-<!--        <div class="dot"></div>-->
-<!--      </div>-->
-<!--    </div>-->
+    <!--    <div class="bubble-left" v-if="!connected" style="padding: calc(2 * var(&#45;&#45;r) / 3)">-->
+    <!--      &lt;!&ndash;      <pixel-spinner&ndash;&gt;-->
+    <!--      &lt;!&ndash;          :animation-duration="2000"&ndash;&gt;-->
+    <!--      &lt;!&ndash;          :size="22"&ndash;&gt;-->
+    <!--      &lt;!&ndash;          color="#0d6efd"&ndash;&gt;-->
+    <!--      &lt;!&ndash;      />&ndash;&gt;-->
+    <!--      <div class="hollow-dots-spinner">-->
+    <!--        <div class="dot"></div>-->
+    <!--        <div class="dot"></div>-->
+    <!--        <div class="dot"></div>-->
+    <!--      </div>-->
+    <!--    </div>-->
     <div class="bubble-left" v-if="state!=='done'" style="padding: calc(2 * var(--r) / 3)">
       <div class="status">
         <!--       <pixel-spinner-->
@@ -87,16 +87,18 @@ socket.addEventListener("open", () => {
   messages.value.push({sender: "assistant", text: `Verbindung hergestellt zu ${props.websocket_url}`})
   connected.value = true
 });
-function addMessage(message: string){
+
+function addMessage(message: string) {
   messages.value.push({sender: "assistant", text: message});
-      nextTick(() => {
-        document.getElementById("send_input")?.focus();
-        const messages = document.getElementById("messages");
-        if (messages) {
-          messages.scrollTop = messages.scrollHeight;
-        }
-      });
+  nextTick(() => {
+    document.getElementById("send_input")?.focus();
+    const messages = document.getElementById("messages");
+    if (messages) {
+      messages.scrollTop = messages.scrollHeight;
+    }
+  });
 }
+
 socket.addEventListener("message", (event) => {
   const message = JSON.parse(event.data);
   console.debug(message)
@@ -115,6 +117,11 @@ socket.addEventListener("message", (event) => {
           break;
         case "agent_action":
           addMessage(`Starte ${message.content.data.tool} mit Input '<i>${message.content.data.tool_input}</i>'`)
+          break;
+        case "llm_error":
+        case "chain_error":
+        case "tool_error":
+          console.error(message.content.data)
           break;
         default:
           break;
