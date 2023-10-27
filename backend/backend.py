@@ -6,14 +6,13 @@ import re
 
 import websockets
 import yaml
-from langchain.agents import initialize_agent, AgentType
-from langchain.callbacks import get_openai_callback, StdOutCallbackHandler
+from langchain.callbacks import get_openai_callback
 from langchain.chat_models import ChatOpenAI
-from langchain.llms import HuggingFaceEndpoint
-from langchain.memory import ConversationBufferMemory
-from langchain.schema import HumanMessage
 from DB_Classes import *
+from MistralAIHistory import MistralAIHistory, get_buffer_string_mistral
 from WebsocketCallbackHandler import WebsocketCallbackHandler, StreamingWebsocketHandler
+from MistralAI import MistralAI
+from PromptTemplates import searchQueryPromptMistral, mainTemplateMistral
 
 from tools import create_elastic_tool, create_typesense_tool
 
@@ -95,7 +94,6 @@ def start_backend():
                 if endpoint is None:
                     raise Exception("No HuggingFace endpoint specified")
 
-
             limit = data["monthly_limit"]
             if limit is None:
                 raise Exception("No monthly limit specified")
@@ -124,7 +122,7 @@ def start_backend():
                 else:
                     raise Exception("Search engine not supported")
 
-                memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+                memory = MistralAIHistory(memory_key="chat_history", return_messages=True)
                 db_entry = Chat.create()
 
                 tools = [
@@ -141,7 +139,7 @@ def start_backend():
                         callbacks=[StreamingWebsocketHandler(websocket)]
                     )
                 else:
-                    model = HuggingFaceEndpoint(
+                    model = MistralAI(
                         endpoint_url=endpoint,
                         huggingfacehub_api_token=huggingface_key,
                         model_kwargs={"temperature": 0.1, "max_new_tokens": 500},
@@ -149,14 +147,6 @@ def start_backend():
                         # callbacks=[StreamingWebsocketHandler(websocket)],
                     )
 
-                agent = initialize_agent(
-                    tools,
-                    model,
-                    agent=AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
-                    verbose=False,
-                    memory=memory,
-                    # callbacks=[handler]
-                )
                 try:
                     with get_openai_callback() as cb:
                         async for message in websocket:
@@ -172,17 +162,23 @@ def start_backend():
                                                 "content": f"{translate_if_source_lang(translator, 'Das monatliche Limit wurde erreicht. Bitte wende dich an den Administrator.', source_lang)}"}))
                                 continue
 
-                            prompt = f"""
-                            {message}
-                            
-                            Antworte auf Deutsch verwende lediglich die gegeben Informationen. 
-                            
-                            """
                             # Zitiere deine Aussagen, indem du sie mit dem Index (beginnend mit 1) der Quelle versiehst, aus der die Information stammt, z.B.: 'Dies ist ein zitiertes Beispiel [i].'
                             try:
-                                task = asyncio.create_task(asyncio.to_thread(agent.run, prompt, callbacks=[handler]))
-                                await task
-                                result = task.result()
+                                # task = asyncio.create_task(asyncio.to_thread(agent.run, prompt, callbacks=[handler]))
+                                # await task
+                                # result = task.result()
+                                queryPrompt = searchQueryPromptMistral.format(question=message)
+
+                                keywords = model.invoke(queryPrompt)
+                                print(keywords)
+                                context = tool.func(" ".join(json.loads(keywords)))
+                                # context = tool.func(message)
+                                # print(context)
+                                await websocket.send(
+                                    json.dumps({"type": "event", "content": {"event": "tool_end", "data": data}}))
+                                mainPrompt = mainTemplateMistral.format(question=message, context=context, history=get_buffer_string_mistral(memory.chat_memory.messages))
+                                print(mainPrompt)
+                                result = model.invoke(mainPrompt)
                                 result = translate_if_source_lang(translator, result, source_lang)
                                 if len(sources) > 0:
                                     result += f"\n\n{translate_if_source_lang(translator, 'Gefundene Informationen:', source_lang)}"
@@ -191,6 +187,9 @@ def start_backend():
                                         s = sources.pop(0)
                                         result += f"\n- [{index}] [{s['title']}]({sr_exp.sub(sr_to, s['source'])})"
                                         index += 1
+
+                                memory.chat_memory.add_user_message(message)
+                                memory.chat_memory.add_ai_message(result)
                             except Exception as e:
                                 result = translate_if_source_lang(translator, "Es ist ein Fehler aufgetreten.",
                                                                   source_lang)
