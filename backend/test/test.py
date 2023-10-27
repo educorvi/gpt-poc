@@ -21,7 +21,9 @@ async def test():
             port = data["Websocket"]["port"]
             if port is None:
                 raise Exception("No port specified")
-            open_ai_model = data["OpenAI"]["model"]["main"]
+            model = data["OpenAI"]["model"]["main"]
+            if data["provider"] == "huggingface":
+                model = "huggingface-"+input("Huggingface model name: ")
             es_result_number = data["ElasticSearch"]["result_number"]
             es_result_size = data["ElasticSearch"]["result_size"]
 
@@ -40,7 +42,7 @@ async def test():
             usage = None
             answer = None
             tool_usage = []
-            while usage is None or answer is None or len(tool_usage) == 0:
+            while usage is None or answer is None:
                 message = json.loads(await websocket.recv())
                 if message["type"] == "usage":
                     usage = message
@@ -56,16 +58,16 @@ async def test():
     except Exception as e:
         print(e)
 
-    if not os.path.exists(source_dir.joinpath("results").joinpath(open_ai_model)):
-        os.makedirs(source_dir.joinpath("results").joinpath(open_ai_model))
+    if not os.path.exists(source_dir.joinpath("results").joinpath(model)):
+        os.makedirs(source_dir.joinpath("results").joinpath(model))
 
     now = datetime.now()
 
     dt_string = now.strftime("%d-%m-%Y_%H:%M")
-    with open(source_dir.joinpath("results").joinpath(open_ai_model).joinpath(f"{dt_string}.json"), "w") as outfile:
+    with open(source_dir.joinpath("results").joinpath(model).joinpath(f"{dt_string}.json"), "w") as outfile:
         output = {
             "meta": {
-                "model": open_ai_model,
+                "model": model,
                 "elastic_search": {
                     "result_number": es_result_number,
                     "result_size": es_result_size
@@ -76,12 +78,12 @@ async def test():
         }
         json.dump(output, outfile)
 
-    with open(source_dir.joinpath("results").joinpath(open_ai_model).joinpath(f"{dt_string}.md"), "w") as outfile:
+    with open(source_dir.joinpath("results").joinpath(model).joinpath(f"{dt_string}.md"), "w") as outfile:
         output = f'''
 # Evaluation
 ## Meta
 - Datum: {now.strftime("%d.%m.%Y %H:%M")}
-- Model: {open_ai_model}
+- Model: {model}
 - ElasticSearch:
     - Anzahl der Ergebnisse: {es_result_number}
     - Größe der Ergebnisse: {es_result_size}
