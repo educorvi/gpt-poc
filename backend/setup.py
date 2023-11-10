@@ -9,7 +9,8 @@ requirements = [
     "aiohttp==3.8.4",
     "peewee==3.16.2",
     "typesense~=0.16.0",
-    "pydantic==1.10.12"
+    "pydantic==1.10.12",
+    "deepl~=1.15.0"
 ]
 
 description = open("README.md").read()
