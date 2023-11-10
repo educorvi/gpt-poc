@@ -8,7 +8,8 @@ requirements = [
     "openai~=0.27.7",
     "aiohttp==3.8.4",
     "peewee==3.16.2",
-    "typesense~=0.16.0"
+    "typesense~=0.16.0",
+    "pydantic==1.10.12"
 ]
 
 description = open("README.md").read()

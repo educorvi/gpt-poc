@@ -31,11 +31,12 @@ def start_backend():
     parser.add_argument('-m', '--model', help='Select the openai model, that the chatbot should use')
     parser.add_argument('-p', '--port', help='Port that the backend will run on')
     parser.add_argument('-s', '--search-engine', help='elasticsearch or typesense')
+    parser.add_argument('-c', '--config', help='path to the config file', default="/etc/gpt-poc/conf.yaml")
     args = parser.parse_args()
     # print(args)
 
     print(f"Cost of usage for the current month thus far: {round(get_cost_of_current_month() * 100) / 100}$")
-    with open("/etc/gpt-poc/conf.yaml", "r") as stream:
+    with open(args.config, "r") as stream:
         try:
             data = yaml.safe_load(stream)
             deepl_api_key = None
