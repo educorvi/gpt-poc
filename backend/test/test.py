@@ -24,6 +24,9 @@ async def test():
             open_ai_model = data["OpenAI"]["model"]["main"]
             es_result_number = data["ElasticSearch"]["result_number"]
             es_result_size = data["ElasticSearch"]["result_size"]
+            ts_result_number = data["Typesense"]["result_number"]
+            ts_result_size = data["Typesense"]["result_size"]
+            se = data["SearchEngine"]
 
         except yaml.YAMLError as exc:
             print(exc)
@@ -66,6 +69,11 @@ async def test():
         output = {
             "meta": {
                 "model": open_ai_model,
+                "search_engine": se,
+                "typesense": {
+                    "result_number": ts_result_number,
+                    "result_size": ts_result_size
+                },
                 "elastic_search": {
                     "result_number": es_result_number,
                     "result_size": es_result_size
@@ -82,6 +90,10 @@ async def test():
 ## Meta
 - Datum: {now.strftime("%d.%m.%Y %H:%M")}
 - Model: {open_ai_model}
+- Search Engine: {se}
+- Typesense:
+    - Anzahl der Ergebnisse: {ts_result_number}
+    - Größe der Ergebnisse: {ts_result_size}
 - ElasticSearch:
     - Anzahl der Ergebnisse: {es_result_number}
     - Größe der Ergebnisse: {es_result_size}
