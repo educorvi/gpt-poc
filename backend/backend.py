@@ -13,6 +13,7 @@ from MistralAIHistory import MistralAIHistory, get_buffer_string_mistral
 from WebsocketCallbackHandler import WebsocketCallbackHandler, StreamingWebsocketHandler
 from MistralAI import MistralAI
 from PromptTemplates import searchQueryPromptMistral, mainTemplateMistral
+from Solar import Solar, SolarHistory
 
 from tools import create_elastic_tool, create_typesense_tool
 
@@ -122,7 +123,7 @@ def start_backend():
                 else:
                     raise Exception("Search engine not supported")
 
-                memory = MistralAIHistory(memory_key="chat_history", return_messages=True)
+                memory = SolarHistory(memory_key="chat_history", return_messages=True)
                 db_entry = Chat.create()
 
                 tools = [
@@ -139,7 +140,7 @@ def start_backend():
                         callbacks=[StreamingWebsocketHandler(websocket)]
                     )
                 else:
-                    model = MistralAI(
+                    model = Solar(
                         endpoint_url=endpoint,
                         huggingfacehub_api_token=huggingface_key,
                         model_kwargs={"temperature": 0.1, "max_new_tokens": 500},
