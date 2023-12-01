@@ -12,8 +12,8 @@ from DB_Classes import *
 from MistralAIHistory import MistralAIHistory, get_buffer_string_mistral
 from WebsocketCallbackHandler import WebsocketCallbackHandler, StreamingWebsocketHandler
 from MistralAI import MistralAI
-from PromptTemplates import searchQueryPromptMistral, mainTemplateMistral
-from Solar import Solar, SolarHistory
+from PromptTemplates import searchQueryPromptMistral, mainTemplateMistral, searchQueryPromptSolar, mainTemplateSolar
+from Solar import Solar, SolarHistory, get_buffer_string_solar
 
 from tools import create_elastic_tool, create_typesense_tool
 
@@ -168,7 +168,7 @@ def start_backend():
                                 # task = asyncio.create_task(asyncio.to_thread(agent.run, prompt, callbacks=[handler]))
                                 # await task
                                 # result = task.result()
-                                queryPrompt = searchQueryPromptMistral.format(question=message)
+                                queryPrompt = searchQueryPromptSolar.format(question=message)
 
                                 keywords = model.invoke(queryPrompt)
                                 print(keywords)
@@ -177,7 +177,7 @@ def start_backend():
                                 # print(context)
                                 await websocket.send(
                                     json.dumps({"type": "event", "content": {"event": "tool_end", "data": data}}))
-                                mainPrompt = mainTemplateMistral.format(question=message, context=context, history=get_buffer_string_mistral(memory.chat_memory.messages))
+                                mainPrompt = mainTemplateSolar.format(question=message, context=context, history=get_buffer_string_solar(memory.chat_memory.messages))
                                 print(mainPrompt)
                                 result = model.invoke(mainPrompt)
                                 result = translate_if_source_lang(translator, result, source_lang)

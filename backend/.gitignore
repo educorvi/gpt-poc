@@ -4,3 +4,4 @@ gpt_poc_backend.egg-info
 __pycache__
 deb_dist
 gpt-poc-backend-*.tar.gz
+conf.yaml
