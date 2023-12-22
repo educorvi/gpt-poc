@@ -7,7 +7,7 @@ import re
 import websockets
 import yaml
 from langchain.callbacks import get_openai_callback
-from langchain.chat_models import ChatOpenAI
+from langchain.chat_models import ChatOpenAI, ChatOllama
 from DB_Classes import *
 from MistralAIHistory import MistralAIHistory, get_buffer_string_mistral
 from WebsocketCallbackHandler import WebsocketCallbackHandler, StreamingWebsocketHandler
@@ -31,11 +31,12 @@ def start_backend():
     parser.add_argument('-m', '--model', help='Select the openai model, that the chatbot should use')
     parser.add_argument('-p', '--port', help='Port that the backend will run on')
     parser.add_argument('-s', '--search-engine', help='elasticsearch or typesense')
+    parser.add_argument('-c', '--config', help='path to the config file', default="/etc/gpt-poc/conf.yaml")
     args = parser.parse_args()
     # print(args)
 
     print(f"Cost of usage for the current month thus far: {round(get_cost_of_current_month() * 100) / 100}$")
-    with open("/etc/gpt-poc/conf.yaml", "r") as stream:
+    with open(args.config, "r") as stream:
         try:
             data = yaml.safe_load(stream)
             deepl_api_key = None
@@ -76,7 +77,7 @@ def start_backend():
             provider = data["provider"]
             if provider is None:
                 raise Exception("No provider specified")
-            if not (provider == "openai" or provider == "huggingface"):
+            if not (provider == "openai" or provider == "huggingface" or provider == "ollama"):
                 raise Exception("Provider not supported")
             if provider == "openai":
                 open_ai_key = data["OpenAI"]["API_KEY"]
@@ -92,6 +93,8 @@ def start_backend():
                 endpoint: str = data["HuggingFace"]["endpoint"]
                 if endpoint is None:
                     raise Exception("No HuggingFace endpoint specified")
+            if provider == "ollama":
+                ollama_model: str = data["Ollama"]["model"]
 
             limit = data["monthly_limit"]
             if limit is None:
@@ -137,7 +140,7 @@ def start_backend():
                         # streaming=True,
                         callbacks=[StreamingWebsocketHandler(websocket)]
                     )
-                else:
+                elif provider == "huggingface":
                     model = MistralAI(
                         endpoint_url=endpoint,
                         huggingfacehub_api_token=huggingface_key,
@@ -145,7 +148,12 @@ def start_backend():
                         task="text-generation",
                         # callbacks=[StreamingWebsocketHandler(websocket)],
                     )
-
+                elif provider == "ollama":
+                    model = ChatOllama(
+                        model=ollama_model,
+                        callbacks=[StreamingWebsocketHandler(websocket)],
+                        temperature=0
+                    )
                 try:
                     with get_openai_callback() as cb:
                         async for message in websocket:
@@ -170,7 +178,7 @@ def start_backend():
 
                                 keywords = model.invoke(queryPrompt)
                                 print(keywords)
-                                context = tool.func(" ".join(json.loads(keywords)))
+                                context = tool.func(" ".join(json.loads(keywords.content)))
                                 # context = tool.func(message)
                                 # print(context)
                                 await websocket.send(
