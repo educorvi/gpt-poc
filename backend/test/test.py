@@ -81,8 +81,8 @@ async def test():
                 "model": model,
                 "search": {
                     "provider": se,
-                    "result_number": es_result_number,
-                    "result_size": es_result_size
+                    "result_number": es_result_number if se == "elasticsearch" else ts_result_number,
+                    "result_size": es_result_size if se == "elasticsearch" else ts_result_size
                 },
                 "date": str(now)
             },
