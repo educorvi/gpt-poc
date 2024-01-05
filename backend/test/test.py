@@ -15,7 +15,7 @@ source_dir = source_path.parent
 
 
 async def test():
-    with open("/etc/gpt-poc/conf.yaml", "r") as stream:
+    with open(source_dir.parent.joinpath("conf.yaml"), "r") as stream:
         try:
             data = yaml.safe_load(stream)
             port = data["Websocket"]["port"]
@@ -23,9 +23,17 @@ async def test():
                 raise Exception("No port specified")
             model = data["OpenAI"]["model"]["main"]
             if data["provider"] == "huggingface":
-                model = "huggingface-"+input("Huggingface model name: ")
-            es_result_number = data["ElasticSearch"]["result_number"]
-            es_result_size = data["ElasticSearch"]["result_size"]
+                model = "huggingface-" + input("Huggingface model name: ")
+            if data["provider"] == "ollama":
+                model = data["Ollama"]["model"]
+
+            se = data["SearchEngine"]
+            if se is "elasticsearch":
+                es_result_number = data["ElasticSearch"]["result_number"]
+                es_result_size = data["ElasticSearch"]["result_size"]
+            elif se is "typesense":
+                ts_result_number = data["Typesense"]["result_number"]
+                ts_result_size = data["Typesense"]["result_size"]
 
         except yaml.YAMLError as exc:
             print(exc)
@@ -36,14 +44,16 @@ async def test():
     results = []
     try:
         for question in track(questions, description="Answering questions..."):
-            websocket = await websockets.connect(f"ws://localhost:{port}")
+            websocket = await websockets.connect(f"ws://localhost:{port}", ping_timeout=None)
             await websocket.send(question)
             start = time.time()
             usage = None
             answer = None
             tool_usage = []
             while usage is None or answer is None:
-                message = json.loads(await websocket.recv())
+                ws_msg = await websocket.recv()
+                # print(ws_msg)
+                message = json.loads(ws_msg)
                 if message["type"] == "usage":
                     usage = message
                 if message["type"] == "message":
@@ -52,9 +62,10 @@ async def test():
                     tool_usage.append(message["content"]["data"])
 
             end = time.time()
-            results.append({"question": question, "answer": answer, "usage": usage, "tool_usage": tool_usage, "execution_duration_seconds": end - start})
+            results.append({"question": question, "answer": answer, "usage": usage, "tool_usage": tool_usage,
+                            "execution_duration_seconds": end - start})
             await websocket.close()
-            print(f"\u2713 {question} ({round((end-start)*1000)}ms)")
+            print(f"\u2713 {question} ({round((end - start) * 1000)}ms)")
     except Exception as e:
         print(e)
 
@@ -68,7 +79,8 @@ async def test():
         output = {
             "meta": {
                 "model": model,
-                "elastic_search": {
+                "search": {
+                    "provider": se,
                     "result_number": es_result_number,
                     "result_size": es_result_size
                 },
@@ -78,17 +90,20 @@ async def test():
         }
         json.dump(output, outfile)
 
+    if len(results) == 0:
+        raise Exception("No results")
+
     with open(source_dir.joinpath("results").joinpath(model).joinpath(f"{dt_string}.md"), "w") as outfile:
         output = f'''
 # Evaluation
 ## Meta
 - Datum: {now.strftime("%d.%m.%Y %H:%M")}
 - Model: {model}
-- ElasticSearch:
-    - Anzahl der Ergebnisse: {es_result_number}
-    - Größe der Ergebnisse: {es_result_size}
+- {se.capitalize()}:
+    - Anzahl der Ergebnisse: {es_result_number if se == "elasticsearch" else ts_result_number}
+    - Größe der Ergebnisse: {es_result_size if se == "elasticsearch" else ts_result_size}
 - Durchschnittliche Antwortzeit: {round(sum(map(lambda r: r["execution_duration_seconds"], results)) / len(results) * 1000)}ms
-- Gesamtkosten: {round(sum(map(lambda r: r["usage"]["content"]["cost"], results))*100)/100}$
+- Gesamtkosten: {round(sum(map(lambda r: r["usage"]["content"]["cost"], results)) * 100) / 100}$
         
 ## Ergebnisse
         
@@ -99,9 +114,10 @@ async def test():
 ### {result["question"]}
 {result["answer"]["content"]}
 
-Meta:      
-- Antwortzeit: {round(result["execution_duration_seconds"] * 1000)/1000}s
-- Kosten: {round(result["usage"]["content"]["cost"]*100)/100}$
+**Meta:**  
+    
+- Antwortzeit: {round(result["execution_duration_seconds"] * 1000) / 1000}s
+- Kosten: {round(result["usage"]["content"]["cost"] * 100) / 100}$
 - Verwendete Tools:
     {tools_string}
 '''

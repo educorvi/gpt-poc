@@ -77,7 +77,7 @@ const input_message = ref("");
 
 const usage = ref<Record<string, any>>({})
 
-const messages = ref<Message[]>([])
+const messages: ref<Message[]> = ref<Message[]>([])
 
 messages.value.push({sender: "assistant", text: `Verbindung wird aufgebaut...`})
 
@@ -88,14 +88,18 @@ socket.addEventListener("open", () => {
   connected.value = true
 });
 
+function scrollMessagesToTop() {
+  const messagesDiv = document.getElementById("messages");
+  if (messagesDiv) {
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+}
+
 function addMessage(message: string) {
   messages.value.push({sender: "assistant", text: message});
   nextTick(() => {
     document.getElementById("send_input")?.focus();
-    const messages = document.getElementById("messages");
-    if (messages) {
-      messages.scrollTop = messages.scrollHeight;
-    }
+    scrollMessagesToTop();
   });
 }
 
@@ -105,6 +109,7 @@ socket.addEventListener("message", (event) => {
   switch (message.type) {
     case "message":
       state.value = "done";
+      messages.value.pop();
       addMessage(message.content)
       break;
     case "usage":
@@ -114,9 +119,16 @@ socket.addEventListener("message", (event) => {
       switch (message.content.event) {
         case "tool_end":
           state.value = "writing";
+          addMessage("")
           break;
         case "agent_action":
           addMessage(`Starte ${message.content.data.tool} mit Input '<i>${message.content.data.tool_input}</i>'`)
+          break;
+        case "message_stream":
+          if(state.value === "writing") {
+            messages.value[messages.value.length - 1].text += message.content.data;
+          }
+          scrollMessagesToTop();
           break;
         case "llm_error":
         case "chain_error":

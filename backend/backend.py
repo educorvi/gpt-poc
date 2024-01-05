@@ -3,11 +3,13 @@ import argparse
 import asyncio
 import json
 import re
+from typing import Any
 
 import websockets
 import yaml
 from langchain.callbacks import get_openai_callback
 from langchain.chat_models import ChatOpenAI, ChatOllama
+from langchain.llms import Ollama
 from DB_Classes import *
 from MistralAIHistory import MistralAIHistory, get_buffer_string_mistral
 from WebsocketCallbackHandler import WebsocketCallbackHandler, StreamingWebsocketHandler
@@ -131,14 +133,14 @@ def start_backend():
                     tool
                 ]
 
-                handler = WebsocketCallbackHandler(websocket)
-
+                handler = StreamingWebsocketHandler(websocket)
+                # handler = WebsocketCallbackHandler(websocket)
                 if provider == "openai":
                     model = ChatOpenAI(
                         temperature=0, openai_api_key=open_ai_key,
                         model_name=open_ai_model,
                         # streaming=True,
-                        callbacks=[StreamingWebsocketHandler(websocket)]
+                        callbacks=[handler]
                     )
                 elif provider == "huggingface":
                     model = MistralAI(
@@ -149,9 +151,9 @@ def start_backend():
                         # callbacks=[StreamingWebsocketHandler(websocket)],
                     )
                 elif provider == "ollama":
-                    model = ChatOllama(
+                    model = Ollama(
                         model=ollama_model,
-                        callbacks=[StreamingWebsocketHandler(websocket)],
+                        callbacks=[handler],
                         temperature=0
                     )
                 try:
@@ -177,8 +179,14 @@ def start_backend():
                                 queryPrompt = searchQueryPromptMistral.format(question=message)
 
                                 keywords = model.invoke(queryPrompt)
-                                print(keywords)
-                                context = tool.func(" ".join(json.loads(keywords.content)))
+                                # check if keywords is string
+                                if not isinstance(keywords, str):
+                                    keywords = keywords.content
+
+                                await websocket.send(
+                                    json.dumps({"type": "agent_action", "content": {"tool": se, "tool_input": keywords}}))
+
+                                context = tool.func(" ".join(json.loads(keywords)))
                                 # context = tool.func(message)
                                 # print(context)
                                 await websocket.send(
