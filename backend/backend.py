@@ -192,15 +192,15 @@ def start_backend():
                                 await websocket.send(
                                     json.dumps({"type": "event", "content": {"event": "tool_end", "data": data}}))
                                 mainPrompt = mainTemplateMistral.format(question=message, context=context, history=get_buffer_string_mistral(memory.chat_memory.messages))
-                                print(mainPrompt)
+                                # print(mainPrompt)
                                 result = model.invoke(mainPrompt)
                                 result = translate_if_source_lang(translator, result, source_lang)
                                 if len(sources) > 0:
-                                    result += f"\n\n{translate_if_source_lang(translator, 'Gefundene Informationen:', source_lang)}"
+                                    result += f"\n\n{translate_if_source_lang(translator, 'Gefundene Informationen:', source_lang)}  "
                                     index = 1
                                     while len(sources) > 0:
                                         s = sources.pop(0)
-                                        result += f"\n- [{index}] [{s['title']}]({sr_exp.sub(sr_to, s['source'])})"
+                                        result += f"\n- [{index}] [{s['title']}]({sr_exp.sub(sr_to, s['source'])})  "
                                         index += 1
 
                                 memory.chat_memory.add_user_message(message)
