@@ -25,3 +25,7 @@ deepl~=1.15.0
 transformers
 
 pydantic==1.10.12
+
+sentence-transformers
+
+qdrant_client
