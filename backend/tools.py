@@ -68,7 +68,7 @@ def create_qdrant_tool(host, port, collection, embeddings_model_name, sources: l
         embeddings=embeddings,
         collection_name=collection,
         content_payload_key="text",
-        metadata_payload_key=None
+        metadata_payload_key='metadata'
     )
 
     def search_documents_qdrant(query: str) -> str:
@@ -78,7 +78,8 @@ def create_qdrant_tool(host, port, collection, embeddings_model_name, sources: l
                 ]
             )
         results = qclient.similarity_search(query, filter=filter, k=12)
-        sources.extend(list(map(lambda d: {'source': "", 'title': 'Unknown'}, results)))
+        print(list(map(lambda d: d.metadata, results)))
+        sources.extend(list(map(lambda d: {'source': d.metadata.get("url"), 'title': d.metadata.get("title")}, results)))
         ret_string = "\n--------------------------------------------------------------------\n".join(
             list(map(lambda d: "Metadata: \n" + json.dumps(d.metadata) + "\nContent: \n" + d.page_content,
                      results))

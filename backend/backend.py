@@ -104,7 +104,7 @@ def start_backend():
             async def respond(websocket):
                 sources = []
                 if se == "qdrant":
-                    tool = create_qdrant_tool("entwicklung.educorvi.de", 6333, "inwi_pages_and_files",
+                    tool = create_qdrant_tool("entwicklung.educorvi.de", 6333, "inwi_pages_and_files_metadata_and_splittet",
                                               "T-Systems-onsite/cross-en-de-roberta-sentence-transformer", sources)
                 else:
                     raise Exception("Search engine not supported")
