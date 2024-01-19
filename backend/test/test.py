@@ -28,10 +28,10 @@ async def test():
                 model = data["Ollama"]["model"]
 
             se = data["SearchEngine"]
-            if se is "elasticsearch":
+            if se == "elasticsearch":
                 es_result_number = data["ElasticSearch"]["result_number"]
                 es_result_size = data["ElasticSearch"]["result_size"]
-            elif se is "typesense":
+            elif se == "typesense":
                 ts_result_number = data["Typesense"]["result_number"]
                 ts_result_size = data["Typesense"]["result_size"]
 
