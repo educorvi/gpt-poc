@@ -7,23 +7,27 @@ from typing import Any
 
 import websockets
 import yaml
-from langchain.callbacks import get_openai_callback
-from langchain.chat_models import ChatOpenAI, ChatOllama
-from langchain.llms import Ollama
 from DB_Classes import *
 from MistralAIHistory import MistralAIHistory, get_buffer_string_mistral
 from WebsocketCallbackHandler import WebsocketCallbackHandler, StreamingWebsocketHandler
 from MistralAI import MistralAI
 from PromptTemplates import searchQueryPromptMistral, mainTemplateMistral
 
-from tools import create_elastic_tool, create_typesense_tool
+from tools import create_elastic_tool, create_typesense_tool, create_qdrant_tool
 
 import deepl
+from langchain_community.callbacks import get_openai_callback
+from langchain_community.chat_models import ChatOllama
+from langchain_community.llms import Ollama
+from langchain_openai import ChatOpenAI
+from langchain_mistralai.chat_models import ChatMistralAI
 
 
 def translate_if_source_lang(translator, message, source_lang) -> str:
-    if source_lang is None or translator is None:
+    if source_lang is None or translator is None or source_lang == "DE":
+        print("Skipping translation")
         return message
+    print(f"Translating message to {source_lang}")
     return translator.translate_text(message, target_lang=source_lang).text
 
 
@@ -56,30 +60,15 @@ def start_backend():
                 se = args.search_engine
             if se is None:
                 raise Exception("No search engine specified")
-            if se == "elasticsearch":
-                es_url = data["ElasticSearch"]["url"]
-                es_index = data["ElasticSearch"]["index"]
-                es_result_number = data["ElasticSearch"]["result_number"]
-                es_result_size = data["ElasticSearch"]["result_size"]
-                if es_url is None or es_index is None or es_result_size is None or es_result_number is None:
-                    raise Exception("ElasticSearch config incomplete")
-            elif se == "typesense":
-                ts_host = data["Typesense"]["host"]
-                ts_port = data["Typesense"]["port"]
-                ts_protocol = data["Typesense"]["protocol"]
-                ts_collection = data["Typesense"]["collection"]
-                ts_result_number = data["Typesense"]["result_number"]
-                ts_result_size = data["Typesense"]["result_size"]
-                ts_api_key = data["Typesense"]["api_key"]
-                if ts_host is None or ts_port is None or ts_protocol is None or ts_collection is None or ts_result_size is None or ts_result_number is None or ts_api_key is None:
-                    raise Exception("Typesense config incomplete")
+            if se == "qdrant":
+                pass
             else:
                 raise Exception("Search engine not supported")
 
             provider = data["provider"]
             if provider is None:
                 raise Exception("No provider specified")
-            if not (provider == "openai" or provider == "huggingface" or provider == "ollama"):
+            if not (provider == "openai" or provider == "huggingface" or provider == "ollama" or provider == "mistralai"):
                 raise Exception("Provider not supported")
             if provider == "openai":
                 open_ai_key = data["OpenAI"]["API_KEY"]
@@ -97,6 +86,11 @@ def start_backend():
                     raise Exception("No HuggingFace endpoint specified")
             if provider == "ollama":
                 ollama_model: str = data["Ollama"]["model"]
+            if provider == "mistralai":
+                mistralai_model: str = data["MistralAI"]["model"]
+                mistralai_key: str = data["MistralAI"]["API_KEY"]
+                if mistralai_key is None:
+                    raise Exception("No MistralAI key specified")
 
             limit = data["monthly_limit"]
             if limit is None:
@@ -118,11 +112,9 @@ def start_backend():
 
             async def respond(websocket):
                 sources = []
-                if se == "elasticsearch":
-                    tool = create_elastic_tool(es_url, es_index, es_result_size, es_result_number, sources)
-                elif se == "typesense":
-                    tool = create_typesense_tool(ts_host, ts_port, ts_protocol, ts_api_key, ts_collection,
-                                                 ts_result_size, ts_result_number, sources)
+                if se == "qdrant":
+                    tool = create_qdrant_tool("entwicklung.educorvi.de", 6333, "inwi_pages_and_files_metadata_and_splittet",
+                                              "T-Systems-onsite/cross-en-de-roberta-sentence-transformer", str(data["Qdrant"]["api_key"]), sources)
                 else:
                     raise Exception("Search engine not supported")
 
@@ -146,7 +138,8 @@ def start_backend():
                     model = MistralAI(
                         endpoint_url=endpoint,
                         huggingfacehub_api_token=huggingface_key,
-                        model_kwargs={"temperature": 0.1, "max_new_tokens": 500},
+                        temperature=0.1,
+                        max_new_tokens=500,
                         task="text-generation",
                         # callbacks=[StreamingWebsocketHandler(websocket)],
                     )
@@ -155,6 +148,13 @@ def start_backend():
                         model=ollama_model,
                         callbacks=[handler],
                         temperature=0
+                    )
+                elif provider == "mistralai":
+                    model = ChatMistralAI(
+                        api_key=mistralai_key,
+                        model_name=mistralai_model,
+                        callbacks=[handler],
+                        temperature=0.1
                     )
                 try:
                     with get_openai_callback() as cb:
@@ -173,27 +173,17 @@ def start_backend():
 
                             # Zitiere deine Aussagen, indem du sie mit dem Index (beginnend mit 1) der Quelle versiehst, aus der die Information stammt, z.B.: 'Dies ist ein zitiertes Beispiel [i].'
                             try:
-                                # task = asyncio.create_task(asyncio.to_thread(agent.run, prompt, callbacks=[handler]))
-                                # await task
-                                # result = task.result()
-                                queryPrompt = searchQueryPromptMistral.format(question=message)
 
-                                keywords = model.invoke(queryPrompt)
-                                # check if keywords is string
-                                if not isinstance(keywords, str):
-                                    keywords = keywords.content
 
-                                await websocket.send(
-                                    json.dumps({"type": "agent_action", "content": {"tool": se, "tool_input": keywords}}))
 
-                                context = tool.func(" ".join(json.loads(keywords)))
-                                # context = tool.func(message)
-                                # print(context)
+
+                                context = tool.func(message)
+                                print(context)
                                 await websocket.send(
                                     json.dumps({"type": "event", "content": {"event": "tool_end", "data": data}}))
                                 mainPrompt = mainTemplateMistral.format(question=message, context=context, history=get_buffer_string_mistral(memory.chat_memory.messages))
                                 # print(mainPrompt)
-                                result = model.invoke(mainPrompt)
+                                result = model.invoke(mainPrompt).content
                                 result = translate_if_source_lang(translator, result, source_lang)
                                 if len(sources) > 0:
                                     result += f"\n\n{translate_if_source_lang(translator, 'Gefundene Informationen:', source_lang)}  "
@@ -208,7 +198,8 @@ def start_backend():
                             except Exception as e:
                                 result = translate_if_source_lang(translator, "Es ist ein Fehler aufgetreten.",
                                                                   source_lang)
-                                print(e)
+
+                                print(e.with_traceback())
                             await websocket.send(json.dumps({"type": "message",
                                                              "content": result}))
                             await websocket.send(json.dumps({

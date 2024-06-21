@@ -1,9 +1,10 @@
 import asyncio
 import json
 from typing import Dict, Any, List, Union
-
-from langchain.callbacks.base import BaseCallbackHandler, AsyncCallbackHandler
-from langchain.schema import BaseMessage, LLMResult, AgentAction, AgentFinish
+from langchain_core.agents import AgentAction, AgentFinish
+from langchain_core.callbacks import AsyncCallbackHandler, BaseCallbackHandler
+from langchain_core.messages import BaseMessage
+from langchain_core.outputs import LLMResult
 
 
 class WebsocketCallbackHandler(AsyncCallbackHandler):

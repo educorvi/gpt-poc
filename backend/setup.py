@@ -10,7 +10,9 @@ requirements = [
     "peewee==3.16.2",
     "typesense~=0.16.0",
     "pydantic==1.10.12",
-    "deepl~=1.15.0"
+    "deepl~=1.15.0",
+    "qdrant_client~=1.7.0",
+    "sentence-transformers~=2.2.2",
 ]
 
 description = open("README.md").read()

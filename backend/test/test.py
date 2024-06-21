@@ -26,6 +26,8 @@ async def test():
                 model = "huggingface-" + input("Huggingface model name: ")
             if data["provider"] == "ollama":
                 model = data["Ollama"]["model"]
+            if data["provider"] == "mistralai":
+                model = data["MistralAI"]["model"]
 
             se = data["SearchEngine"]
             if se == "elasticsearch":
@@ -34,6 +36,9 @@ async def test():
             elif se == "typesense":
                 ts_result_number = data["Typesense"]["result_number"]
                 ts_result_size = data["Typesense"]["result_size"]
+            else:
+                ts_result_number = None
+                ts_result_size = None
 
         except yaml.YAMLError as exc:
             print(exc)

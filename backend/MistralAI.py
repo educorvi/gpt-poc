@@ -1,7 +1,6 @@
 from typing import Optional, List, Any
-
-from langchain.callbacks.manager import CallbackManagerForLLMRun
-from langchain.llms import HuggingFaceEndpoint
+from langchain_community.llms import HuggingFaceEndpoint
+from langchain_core.callbacks import CallbackManagerForLLMRun
 
 
 class MistralAI(HuggingFaceEndpoint):

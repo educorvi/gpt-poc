@@ -3,8 +3,23 @@ OpenAI:
   model:
     main: gpt-3.5-turbo-16k
 
+HuggingFace:
+  API_KEY:
+  endpoint:
 
-# Searchengine: elasticsearch or typesense
+Ollama:
+  model: mixtral:instruct
+
+MistralAI:
+  API_KEY:
+#  model: open-mixtral-8x22b
+  model: mistral-large-latest
+#  model: open-mixtral-8x7b
+
+# openai, huggingface, ollama, mistralai
+provider: openai
+
+# Searchengine: elasticsearch, typesense, qdrant
 SearchEngine: elasticsearch
 
 ElasticSearch:
@@ -24,6 +39,13 @@ Typesense:
   result_number: 4
   # Number of tokens before and after highlight
   result_size: 150
+  api_key:
+
+Qdrant:
+  host:
+  port:
+  collection:
+  embeddings_model:
   api_key:
 
 Websocket:
