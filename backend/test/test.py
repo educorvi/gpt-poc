@@ -26,6 +26,8 @@ async def test():
                 model = "huggingface-" + input("Huggingface model name: ")
             if data["provider"] == "ollama":
                 model = data["Ollama"]["model"]
+            if data["provider"] == "mistralai":
+                model = data["MistralAI"]["model"]
 
             se = data["SearchEngine"]
             if se == "elasticsearch":

@@ -7,9 +7,6 @@ from typing import Any
 
 import websockets
 import yaml
-from langchain.callbacks import get_openai_callback
-from langchain.chat_models import ChatOpenAI, ChatOllama
-from langchain.llms import Ollama
 from DB_Classes import *
 from MistralAIHistory import MistralAIHistory, get_buffer_string_mistral
 from WebsocketCallbackHandler import WebsocketCallbackHandler, StreamingWebsocketHandler
@@ -19,11 +16,18 @@ from PromptTemplates import searchQueryPromptMistral, mainTemplateMistral
 from tools import create_elastic_tool, create_typesense_tool, create_qdrant_tool
 
 import deepl
+from langchain_community.callbacks import get_openai_callback
+from langchain_community.chat_models import ChatOllama
+from langchain_community.llms import Ollama
+from langchain_openai import ChatOpenAI
+from langchain_mistralai.chat_models import ChatMistralAI
 
 
 def translate_if_source_lang(translator, message, source_lang) -> str:
-    if source_lang is None or translator is None:
+    if source_lang is None or translator is None or source_lang == "DE":
+        print("Skipping translation")
         return message
+    print(f"Translating message to {source_lang}")
     return translator.translate_text(message, target_lang=source_lang).text
 
 
@@ -64,7 +68,7 @@ def start_backend():
             provider = data["provider"]
             if provider is None:
                 raise Exception("No provider specified")
-            if not (provider == "openai" or provider == "huggingface" or provider == "ollama"):
+            if not (provider == "openai" or provider == "huggingface" or provider == "ollama" or provider == "mistralai"):
                 raise Exception("Provider not supported")
             if provider == "openai":
                 open_ai_key = data["OpenAI"]["API_KEY"]
@@ -82,6 +86,11 @@ def start_backend():
                     raise Exception("No HuggingFace endpoint specified")
             if provider == "ollama":
                 ollama_model: str = data["Ollama"]["model"]
+            if provider == "mistralai":
+                mistralai_model: str = data["MistralAI"]["model"]
+                mistralai_key: str = data["MistralAI"]["API_KEY"]
+                if mistralai_key is None:
+                    raise Exception("No MistralAI key specified")
 
             limit = data["monthly_limit"]
             if limit is None:
@@ -105,7 +114,7 @@ def start_backend():
                 sources = []
                 if se == "qdrant":
                     tool = create_qdrant_tool("entwicklung.educorvi.de", 6333, "inwi_pages_and_files_metadata_and_splittet",
-                                              "T-Systems-onsite/cross-en-de-roberta-sentence-transformer", data["Qdrant"]["api_key"], sources)
+                                              "T-Systems-onsite/cross-en-de-roberta-sentence-transformer", str(data["Qdrant"]["api_key"]), sources)
                 else:
                     raise Exception("Search engine not supported")
 
@@ -129,7 +138,8 @@ def start_backend():
                     model = MistralAI(
                         endpoint_url=endpoint,
                         huggingfacehub_api_token=huggingface_key,
-                        model_kwargs={"temperature": 0.1, "max_new_tokens": 500},
+                        temperature=0.1,
+                        max_new_tokens=500,
                         task="text-generation",
                         # callbacks=[StreamingWebsocketHandler(websocket)],
                     )
@@ -138,6 +148,13 @@ def start_backend():
                         model=ollama_model,
                         callbacks=[handler],
                         temperature=0
+                    )
+                elif provider == "mistralai":
+                    model = ChatMistralAI(
+                        api_key=mistralai_key,
+                        model_name=mistralai_model,
+                        callbacks=[handler],
+                        temperature=0.1
                     )
                 try:
                     with get_openai_callback() as cb:
@@ -166,7 +183,7 @@ def start_backend():
                                     json.dumps({"type": "event", "content": {"event": "tool_end", "data": data}}))
                                 mainPrompt = mainTemplateMistral.format(question=message, context=context, history=get_buffer_string_mistral(memory.chat_memory.messages))
                                 # print(mainPrompt)
-                                result = model.invoke(mainPrompt)
+                                result = model.invoke(mainPrompt).content
                                 result = translate_if_source_lang(translator, result, source_lang)
                                 if len(sources) > 0:
                                     result += f"\n\n{translate_if_source_lang(translator, 'Gefundene Informationen:', source_lang)}  "

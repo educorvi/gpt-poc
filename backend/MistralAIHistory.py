@@ -1,7 +1,7 @@
 from typing import Any, Sequence
 
 from langchain.memory import ConversationBufferMemory
-from langchain.schema import HumanMessage, AIMessage, SystemMessage, FunctionMessage, ChatMessage, BaseMessage
+from langchain_core.messages import AIMessage, BaseMessage, ChatMessage, FunctionMessage, HumanMessage, SystemMessage
 
 
 def get_buffer_string_mistral(

@@ -4,8 +4,7 @@ from __future__ import annotations
 import json
 import urllib.parse
 from typing import Any, List
-
-from langchain.docstore.document import Document
+from langchain_core.documents import Document
 
 
 class CustomTypesenseRetriever:

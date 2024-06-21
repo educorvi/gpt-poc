@@ -1,9 +1,6 @@
 import json
 from typing import Callable
-
-from langchain.tools import Tool
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.vectorstores import Qdrant
+from langchain_huggingface import (HuggingFaceEmbeddings)
 
 import typesense
 
@@ -14,6 +11,8 @@ import elasticsearch
 import qdrant_client
 
 from qdrant_client.http import models
+from langchain_qdrant import Qdrant
+from langchain_core.tools import Tool
 
 
 def search_documents(get_documents_func: Callable[[str], list[any]], sources: list) -> Callable[[str], str]:
@@ -62,14 +61,13 @@ def create_typesense_tool(host: str, port: str, protocol: str, api_key: str, col
 
 def create_qdrant_tool(host, port, collection, embeddings_model_name, api_key, sources: list):
     embeddings = HuggingFaceEmbeddings(model_name=embeddings_model_name)
-    q = qdrant_client.QdrantClient(host=host, port=port)
+    q = qdrant_client.QdrantClient(host=host, port=port, api_key=api_key, https=False)
     qclient = Qdrant(
         client=q,
         embeddings=embeddings,
         collection_name=collection,
         content_payload_key="text",
-        metadata_payload_key='metadata',
-        api_key=api_key
+        metadata_payload_key='metadata'
     )
 
     def search_documents_qdrant(query: str) -> str:
@@ -78,11 +76,11 @@ def create_qdrant_tool(host, port, collection, embeddings_model_name, api_key, s
                     models.FieldCondition(key="text", match=models.MatchValue(value=""))
                 ]
             )
-        results = qclient.similarity_search(query, filter=filter, k=12)
+        results = qclient.similarity_search(query, filter=filter, k=8)
         print(list(map(lambda d: d.metadata, results)))
         sources.extend(list(map(lambda d: {'source': d.metadata.get("url"), 'title': d.metadata.get("title")}, results)))
         ret_string = "\n--------------------------------------------------------------------\n".join(
-            list(map(lambda d: "Metadata: \n" + json.dumps(d.metadata) + "\nContent: \n" + d.page_content,
+            list(map(lambda d: "Number: "+str(results.index(d)+1)+"\nMetadata: \n" + json.dumps(d.metadata) + "\nContent: \n" + d.page_content,
                      results))
         )
         return ret_string
